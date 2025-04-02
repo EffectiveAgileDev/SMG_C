@@ -18,6 +18,8 @@ Before you begin, ensure you have the following installed:
 - [WebView2](https://developer.microsoft.com/en-us/microsoft-edge/webview2/) (Windows)
 - [Supabase Account](https://supabase.com) (for database)
 
+Here is the link to the changes in Supabase on May 1.  https://github.com/orgs/supabase/discussions/29260
+
 ## Development Setup
 
 1. Clone the repository:
