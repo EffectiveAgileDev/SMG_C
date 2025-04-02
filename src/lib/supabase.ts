@@ -2,26 +2,15 @@
 import { createClient } from '@supabase/supabase-js';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
-// Validate environment variables immediately
-function validateConfig() {
-  const url = import.meta.env.VITE_SUPABASE_URL;
-  const key = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-  if (!url) {
-    throw new Error('VITE_SUPABASE_URL is not defined');
-  }
-
-  if (!key) {
-    throw new Error('VITE_SUPABASE_ANON_KEY is not defined');
-  }
-
-  return { url, key };
+if (!import.meta.env.VITE_SUPABASE_URL) {
+  throw new Error('VITE_SUPABASE_URL is not defined');
 }
 
-// This will throw immediately if config is invalid
-const config = validateConfig();
+if (!import.meta.env.VITE_SUPABASE_ANON_KEY) {
+  throw new Error('VITE_SUPABASE_ANON_KEY is not defined');
+}
 
-// Create client only if validation passes
-const supabase = createClient(config.url, config.key);
-
-export { supabase }; 
+export const supabase = createClient(
+  import.meta.env.VITE_SUPABASE_URL,
+  import.meta.env.VITE_SUPABASE_ANON_KEY
+); 

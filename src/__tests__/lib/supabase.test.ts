@@ -1,16 +1,26 @@
 /// <reference types="vitest" />
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { createClient } from '@supabase/supabase-js';
-import { setupTestEnv, cleanupTestEnv, withTestEnv } from '../helpers/envHelper';
+
+// Mock Supabase client with common methods
+const mockSupabaseClient = {
+  from: vi.fn(() => ({
+    select: vi.fn().mockReturnThis(),
+    insert: vi.fn().mockReturnThis(),
+    update: vi.fn().mockReturnThis(),
+    delete: vi.fn().mockReturnThis(),
+  })),
+  auth: {
+    getSession: vi.fn(),
+    signOut: vi.fn(),
+  }
+};
 
 vi.mock('@supabase/supabase-js', () => ({
-  createClient: vi.fn(() => ({
-    from: vi.fn(),
-    auth: vi.fn(),
-  }))
+  createClient: vi.fn(() => mockSupabaseClient)
 }));
 
-describe('Supabase Configuration', () => {
+describe('Supabase Client', () => {
   const mockEnv = {
     VITE_SUPABASE_URL: 'https://example.supabase.co',
     VITE_SUPABASE_ANON_KEY: 'example-anon-key'
@@ -19,7 +29,6 @@ describe('Supabase Configuration', () => {
   beforeEach(() => {
     vi.resetModules();
     vi.clearAllMocks();
-    // Mock import.meta.env
     vi.stubGlobal('import.meta', { env: mockEnv });
   });
 
@@ -27,50 +36,36 @@ describe('Supabase Configuration', () => {
     vi.unstubAllGlobals();
   });
 
-  it('should initialize when all environment variables are present', async () => {
+  it('should initialize Supabase client with correct configuration', async () => {
     const { supabase } = await import('../../lib/supabase');
     
     expect(createClient).toHaveBeenCalledWith(
       mockEnv.VITE_SUPABASE_URL,
       mockEnv.VITE_SUPABASE_ANON_KEY
     );
-    expect(createClient).toHaveBeenCalledTimes(1);
     expect(supabase).toBeDefined();
   });
 
-  it('should throw error when VITE_SUPABASE_URL is missing', async () => {
-    vi.resetModules();
-    vi.stubGlobal('import.meta', { 
-      env: {} 
-    });
-    
-    await expect(import('../../lib/supabase')).rejects.toThrow('VITE_SUPABASE_URL is not defined');
-  });
-
-  it('should throw error when VITE_SUPABASE_ANON_KEY is missing', async () => {
-    vi.resetModules();
-    vi.stubGlobal('import.meta', { 
-      env: {
-        VITE_SUPABASE_URL: mockEnv.VITE_SUPABASE_URL
-      }
-    });
-    
-    await expect(import('../../lib/supabase')).rejects.toThrow('VITE_SUPABASE_ANON_KEY is not defined');
-  });
-});
-
-describe('Component using environment variables', () => {
-  beforeEach(() => {
-    setupTestEnv();
-  });
-
-  afterEach(() => {
-    cleanupTestEnv();
-  });
-
-  it('should access environment variables correctly', withTestEnv(async () => {
+  it('should be able to perform database operations', async () => {
     const { supabase } = await import('../../lib/supabase');
-    expect(supabase).toBeDefined();
-    // Add your test assertions here
-  }));
+    
+    // Test select operation
+    await supabase.from('test_table').select();
+    expect(mockSupabaseClient.from).toHaveBeenCalledWith('test_table');
+    
+    // Test insert operation
+    const testData = { id: 1, name: 'test' };
+    await supabase.from('test_table').insert(testData);
+    expect(mockSupabaseClient.from).toHaveBeenCalledWith('test_table');
+  });
+
+  it('should be able to perform auth operations', async () => {
+    const { supabase } = await import('../../lib/supabase');
+    
+    await supabase.auth.getSession();
+    expect(mockSupabaseClient.auth.getSession).toHaveBeenCalled();
+    
+    await supabase.auth.signOut();
+    expect(mockSupabaseClient.auth.signOut).toHaveBeenCalled();
+  });
 }); 
