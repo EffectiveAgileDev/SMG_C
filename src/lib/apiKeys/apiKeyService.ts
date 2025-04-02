@@ -1,38 +1,64 @@
 import { supabase } from '../supabase';
+import { EncryptionService } from '../encryption/encryptionService';
 import type { APIKey, APIKeyService as APIKeyServiceInterface, KeyValidationResult, PlatformType } from './types';
 
 export class APIKeyService implements APIKeyServiceInterface {
   private supabase = supabase;
+  private encryptionService: EncryptionService;
 
-  async addKey(platform: PlatformType, key: string, name: string): Promise<APIKey> {
-    const { data, error } = await this.supabase
-      .from('api_keys')
-      .insert({
-        platform_type: platform,
-        key_name: name,
-        encrypted_key: key, // TODO: Add encryption
-        is_active: true
-      })
-      .select()
-      .single();
+  constructor(supabaseClient = supabase, encryptionService = new EncryptionService()) {
+    this.supabase = supabaseClient;
+    this.encryptionService = encryptionService;
+  }
 
-    if (error) throw error;
-    return this.mapDatabaseKeyToAPIKey(data);
+  async addKey(platform: PlatformType, key: string, name: string, expiresAt?: Date): Promise<APIKey> {
+    try {
+      const encryptedKey = await this.encryptionService.encrypt(key);
+      
+      const { data, error } = await this.supabase
+        .from('api_keys')
+        .insert({
+          platform_type: platform,
+          key_name: name,
+          encrypted_key: encryptedKey,
+          expires_at: expiresAt?.toISOString(),
+          is_active: true
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return this.mapDatabaseKeyToAPIKey(data);
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('encrypt')) {
+        throw new Error('Failed to encrypt API key');
+      }
+      throw error;
+    }
   }
 
   async rotateKey(keyId: string, newKey: string): Promise<APIKey> {
-    const { data, error } = await this.supabase
-      .from('api_keys')
-      .update({ 
-        encrypted_key: newKey, // TODO: Add encryption
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', keyId)
-      .select()
-      .single();
+    try {
+      const encryptedKey = await this.encryptionService.encrypt(newKey);
+      
+      const { data, error } = await this.supabase
+        .from('api_keys')
+        .update({ 
+          encrypted_key: encryptedKey,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', keyId)
+        .select()
+        .single();
 
-    if (error) throw error;
-    return this.mapDatabaseKeyToAPIKey(data);
+      if (error) throw error;
+      return this.mapDatabaseKeyToAPIKey(data);
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('encrypt')) {
+        throw new Error('Failed to encrypt API key');
+      }
+      throw error;
+    }
   }
 
   async deactivateKey(keyId: string): Promise<void> {
@@ -60,19 +86,38 @@ export class APIKeyService implements APIKeyServiceInterface {
   }
 
   async getActiveKey(platform: PlatformType): Promise<string> {
-    const { data, error } = await this.supabase
-      .from('api_keys')
-      .select()
-      .eq('platform_type', platform)
-      .eq('is_active', true)
-      .limit(1);
+    try {
+      const { data, error } = await this.supabase
+        .from('api_keys')
+        .select()
+        .eq('platform_type', platform)
+        .eq('is_active', true)
+        .limit(1);
 
-    if (error) throw error;
-    if (!data || data.length === 0) {
-      throw new Error(`No active API key found for platform: ${platform}`);
+      if (error) throw error;
+      if (!data || data.length === 0) {
+        throw new Error(`No active API key found for platform: ${platform}`);
+      }
+
+      const key = data[0];
+      const now = new Date();
+
+      // Check if key is expired
+      if (key.expires_at) {
+        const expirationDate = new Date(key.expires_at);
+        if (expirationDate <= now) {
+          throw new Error(`No active API key found for platform: ${platform}`);
+        }
+      }
+
+      const decryptedKey = await this.encryptionService.decrypt(key.encrypted_key);
+      return decryptedKey;
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('decrypt')) {
+        throw new Error('Failed to decrypt API key');
+      }
+      throw error;
     }
-
-    return data[0].encrypted_key;
   }
 
   async validateKey(platform: PlatformType, key: string): Promise<KeyValidationResult> {
