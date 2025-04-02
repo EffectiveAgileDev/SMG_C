@@ -1,0 +1,7 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Social Media Generator - Claude",
+  "version": "0.1.0",
+  "identifier": "com.smg_c.app",
+  "description": "Social Media Generator using Claude PRD - A cross-platform desktop application for generating and managing social media content"
+} 
