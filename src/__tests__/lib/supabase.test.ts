@@ -1,57 +1,76 @@
 /// <reference types="vitest" />
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { createClient } from '@supabase/supabase-js';
+import { setupTestEnv, cleanupTestEnv, withTestEnv } from '../helpers/envHelper';
 
 vi.mock('@supabase/supabase-js', () => ({
   createClient: vi.fn(() => ({
-    // Return a minimal mock client
     from: vi.fn(),
     auth: vi.fn(),
   }))
 }));
 
 describe('Supabase Configuration', () => {
+  const mockEnv = {
+    VITE_SUPABASE_URL: 'https://example.supabase.co',
+    VITE_SUPABASE_ANON_KEY: 'example-anon-key'
+  };
+
   beforeEach(() => {
     vi.resetModules();
     vi.clearAllMocks();
+    // Mock import.meta.env
+    vi.stubGlobal('import.meta', { env: mockEnv });
   });
 
   afterEach(() => {
-    vi.unstubAllEnvs();
+    vi.unstubAllGlobals();
   });
 
   it('should initialize when all environment variables are present', async () => {
-    // Set environment variables before importing
-    vi.stubEnv('VITE_SUPABASE_URL', 'https://example.supabase.co');
-    vi.stubEnv('VITE_SUPABASE_ANON_KEY', 'example-anon-key');
+    const { supabase } = await import('../../lib/supabase');
     
-    // Import the module
-    const module = await import('../../lib/supabase');
-    
-    // Verify the client was created correctly
     expect(createClient).toHaveBeenCalledWith(
-      'https://example.supabase.co',
-      'example-anon-key'
+      mockEnv.VITE_SUPABASE_URL,
+      mockEnv.VITE_SUPABASE_ANON_KEY
     );
     expect(createClient).toHaveBeenCalledTimes(1);
-    expect(module.supabase).toBeDefined();
+    expect(supabase).toBeDefined();
   });
 
   it('should throw error when VITE_SUPABASE_URL is missing', async () => {
-    // Set only ANON_KEY
-    vi.stubEnv('VITE_SUPABASE_ANON_KEY', 'example-anon-key');
-    vi.stubEnv('VITE_SUPABASE_URL', undefined);
+    vi.resetModules();
+    vi.stubGlobal('import.meta', { 
+      env: {} 
+    });
     
-    // The import should throw
-    await expect(() => import('../../lib/supabase')).rejects.toThrow('VITE_SUPABASE_URL is not defined');
+    await expect(import('../../lib/supabase')).rejects.toThrow('VITE_SUPABASE_URL is not defined');
   });
 
   it('should throw error when VITE_SUPABASE_ANON_KEY is missing', async () => {
-    // Set only URL
-    vi.stubEnv('VITE_SUPABASE_URL', 'https://example.supabase.co');
-    vi.stubEnv('VITE_SUPABASE_ANON_KEY', undefined);
+    vi.resetModules();
+    vi.stubGlobal('import.meta', { 
+      env: {
+        VITE_SUPABASE_URL: mockEnv.VITE_SUPABASE_URL
+      }
+    });
     
-    // The import should throw
-    await expect(() => import('../../lib/supabase')).rejects.toThrow('VITE_SUPABASE_ANON_KEY is not defined');
+    await expect(import('../../lib/supabase')).rejects.toThrow('VITE_SUPABASE_ANON_KEY is not defined');
   });
+});
+
+describe('Component using environment variables', () => {
+  beforeEach(() => {
+    setupTestEnv();
+  });
+
+  afterEach(() => {
+    cleanupTestEnv();
+  });
+
+  it('should access environment variables correctly', withTestEnv(async () => {
+    const { supabase } = await import('../../lib/supabase');
+    expect(supabase).toBeDefined();
+    // Add your test assertions here
+  }));
 }); 
