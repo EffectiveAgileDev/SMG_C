@@ -131,7 +131,7 @@ Set up Supabase integration for social media content storage and management
     - [x] Usage tracking and thumbnails
     - [x] Company-wide access model (all authenticated users)
     - [x] Comprehensive test coverage
-    - [ ] Image import functionality
+    - [x] Image import functionality
     - [ ] Thumbnail generation service
   - [ ] Platform Configurations table
 
