@@ -34,27 +34,44 @@ export async function createOAuthTokensTable(supabase: SupabaseClient) {
       -- Enable Row Level Security
       ALTER TABLE oauth_tokens ENABLE ROW LEVEL SECURITY;
 
+      -- Drop existing policies if they exist
+      DROP POLICY IF EXISTS "Users can view their own tokens" ON oauth_tokens;
+      DROP POLICY IF EXISTS "Users can insert their own tokens" ON oauth_tokens;
+      DROP POLICY IF EXISTS "Users can update their own tokens" ON oauth_tokens;
+      DROP POLICY IF EXISTS "Users can delete their own tokens" ON oauth_tokens;
+
       -- Create policies
       CREATE POLICY "Users can view their own tokens"
-        ON oauth_tokens FOR SELECT
+        ON oauth_tokens
+        FOR SELECT
         USING (auth.uid() = user_id);
 
       CREATE POLICY "Users can insert their own tokens"
-        ON oauth_tokens FOR INSERT
+        ON oauth_tokens
+        FOR INSERT
         WITH CHECK (auth.uid() = user_id);
 
       CREATE POLICY "Users can update their own tokens"
-        ON oauth_tokens FOR UPDATE
+        ON oauth_tokens
+        FOR UPDATE
         USING (auth.uid() = user_id)
         WITH CHECK (auth.uid() = user_id);
 
       CREATE POLICY "Users can delete their own tokens"
-        ON oauth_tokens FOR DELETE
+        ON oauth_tokens
+        FOR DELETE
         USING (auth.uid() = user_id);
 
       -- Create indexes
-      CREATE INDEX idx_oauth_tokens_user_platform ON oauth_tokens(user_id, platform);
-      CREATE INDEX idx_oauth_tokens_expires_at ON oauth_tokens(expires_at);
+      CREATE INDEX IF NOT EXISTS idx_oauth_tokens_user_platform ON oauth_tokens(user_id, platform);
+      CREATE INDEX IF NOT EXISTS idx_oauth_tokens_expires_at ON oauth_tokens(expires_at);
+
+      -- Add check constraint for encrypted tokens
+      ALTER TABLE oauth_tokens ADD CONSTRAINT oauth_tokens_tokens_encrypted_check
+        CHECK (
+          access_token LIKE 'enc:v1:%' AND
+          (refresh_token IS NULL OR refresh_token LIKE 'enc:v1:%')
+        );
     `
   });
 
@@ -77,6 +94,26 @@ export async function createOAuthTokensTable(supabase: SupabaseClient) {
           RAISE EXCEPTION 'Table oauth_tokens does not exist';
         END IF;
 
+        -- Test RLS is enabled
+        IF NOT EXISTS (
+          SELECT FROM pg_tables
+          WHERE schemaname = 'public'
+          AND tablename = 'oauth_tokens'
+          AND rowsecurity = true
+        ) THEN
+          RAISE EXCEPTION 'Row Level Security is not enabled on oauth_tokens table';
+        END IF;
+
+        -- Test policies exist
+        IF NOT EXISTS (
+          SELECT FROM pg_policies
+          WHERE schemaname = 'public'
+          AND tablename = 'oauth_tokens'
+          AND policyname = 'Users can view their own tokens'
+        ) THEN
+          RAISE EXCEPTION 'Select policy is not properly configured';
+        END IF;
+
         -- Test columns
         IF NOT EXISTS (
           SELECT FROM information_schema.columns
@@ -87,8 +124,6 @@ export async function createOAuthTokensTable(supabase: SupabaseClient) {
         ) THEN
           RAISE EXCEPTION 'Column id not found or wrong type';
         END IF;
-
-        -- Add more column checks as needed
       END;
       $$ LANGUAGE plpgsql;
     `

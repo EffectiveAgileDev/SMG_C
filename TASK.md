@@ -118,7 +118,12 @@ Set up Supabase integration for social media content storage and management
     - [x] Encryption requirements for sensitive fields
     - [x] Token expiration handling with timestamptz and index
     - [x] Security policies (RLS) - in progress
-  - [ ] Content/Posts table
+  - [x] Content/Posts table
+    - [x] Basic structure with content, platform, and status
+    - [x] Status transition validation (draft -> scheduled -> published)
+    - [x] Required fields for transitions (scheduled_for, published_at)
+    - [x] Comprehensive test coverage for schema and transitions
+    - [x] Row Level Security (RLS) policies
   - [ ] Image Library table
   - [ ] Platform Configurations table
 
@@ -137,7 +142,7 @@ Set up Supabase integration for social media content storage and management
 
 ### Next Steps
 1. [x] Implement security policies for OAuth tokens table
-2. [ ] Create Content/Posts table schema
+2. [x] Create Content/Posts table schema
 3. [ ] Set up Image Library table
 4. [ ] Implement Platform Configurations
 
