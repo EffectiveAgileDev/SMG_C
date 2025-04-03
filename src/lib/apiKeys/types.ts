@@ -17,7 +17,7 @@ export interface KeyValidationResult {
 
 export interface APIKeyService {
   // Key Management
-  addKey(platform: PlatformType, key: string, name: string): Promise<APIKey>;
+  addKey(platform: PlatformType, key: string, name: string, expiresAt?: Date): Promise<APIKey>;
   rotateKey(keyId: string, newKey: string): Promise<APIKey>;
   deactivateKey(keyId: string): Promise<void>;
   listKeys(platform?: PlatformType): Promise<APIKey[]>;
