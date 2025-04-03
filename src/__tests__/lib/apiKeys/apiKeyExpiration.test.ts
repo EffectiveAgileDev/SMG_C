@@ -3,23 +3,13 @@ import type { APIKey, PlatformType } from '../../../lib/apiKeys/types';
 import { APIKeyService } from '../../../lib/apiKeys/apiKeyService';
 import type { EncryptionService } from '../../../lib/encryption/encryptionService';
 
+// Mock Supabase client
 const mockSupabaseClient = {
-  from: vi.fn(() => ({
-    select: vi.fn().mockReturnThis(),
-    insert: vi.fn().mockReturnThis(),
-    update: vi.fn().mockReturnThis(),
-    eq: vi.fn().mockReturnThis(),
-    single: vi.fn().mockReturnThis(),
-    limit: vi.fn().mockReturnThis(),
-  })),
+  from: vi.fn(),
 };
 
-type MockEncryptionService = {
-  encrypt: ReturnType<typeof vi.fn>;
-  decrypt: ReturnType<typeof vi.fn>;
-};
-
-const mockEncryptionService: MockEncryptionService = {
+// Mock encryption service
+const mockEncryptionService = {
   encrypt: vi.fn(),
   decrypt: vi.fn(),
 };
@@ -30,6 +20,7 @@ describe('APIKeyService Expiration', () => {
   const testKeyName = 'Test API Key';
   const testApiKey = 'raw-api-key-12345';
   const encryptedKey = 'encrypted-key-data';
+  const expirationDate = new Date('2024-12-31T00:00:00.000Z');
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -39,34 +30,35 @@ describe('APIKeyService Expiration', () => {
   });
 
   it('should add a key with expiration date', async () => {
-    const expirationDate = new Date();
-    expirationDate.setDate(expirationDate.getDate() + 30); // 30 days from now
-
-    const mockResponse = {
+    const mockInsertResponse = {
       data: {
         id: '1',
         platform_type: testPlatform,
         key_name: testKeyName,
         encrypted_key: encryptedKey,
         expires_at: expirationDate.toISOString(),
-        is_active: true
+        is_active: true,
+        metadata: null
       },
       error: null
     };
 
+    // Mock the checkPlatformKeyLimit method
+    const mockCheckLimit = vi.fn().mockResolvedValue(true);
+    apiKeyService['checkPlatformKeyLimit'] = mockCheckLimit;
+
     const mockChain = {
-      select: vi.fn().mockReturnThis(),
       insert: vi.fn().mockReturnThis(),
-      update: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockReturnThis(),
-      single: vi.fn().mockResolvedValueOnce(mockResponse),
-      limit: vi.fn().mockReturnThis()
+      select: vi.fn().mockReturnThis(),
+      single: vi.fn().mockResolvedValue(mockInsertResponse)
     };
 
-    mockSupabaseClient.from.mockReturnValueOnce(mockChain);
+    // Set up the mock chain
+    mockSupabaseClient.from.mockReturnValue(mockChain);
 
     const result = await apiKeyService.addKey(testPlatform, testApiKey, testKeyName, expirationDate);
 
+    expect(mockCheckLimit).toHaveBeenCalledWith(testPlatform);
     expect(mockChain.insert).toHaveBeenCalledWith({
       platform_type: testPlatform,
       key_name: testKeyName,
@@ -75,43 +67,48 @@ describe('APIKeyService Expiration', () => {
       is_active: true
     });
 
-    expect(result.expiresAt).toEqual(expirationDate);
+    expect(result).toEqual({
+      data: {
+        id: '1',
+        platformType: testPlatform,
+        keyName: testKeyName,
+        encryptedKey: encryptedKey,
+        expiresAt: expirationDate,
+        isActive: true,
+        metadata: null
+      },
+      error: null
+    });
   });
 
   it('should not return expired keys when getting active key', async () => {
-    const expiredDate = new Date();
-    expiredDate.setDate(expiredDate.getDate() - 1); // Yesterday
-
     const mockResponse = {
-      data: [{
-        id: '1',
-        platform_type: testPlatform,
-        key_name: testKeyName,
-        encrypted_key: encryptedKey,
-        expires_at: expiredDate.toISOString(),
-        is_active: true
-      }],
+      data: [],
       error: null
     };
 
     const mockChain = {
       select: vi.fn().mockReturnThis(),
-      insert: vi.fn().mockReturnThis(),
-      update: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
-      limit: vi.fn().mockResolvedValueOnce(mockResponse)
+      limit: vi.fn().mockResolvedValue(mockResponse)
     };
 
-    mockSupabaseClient.from.mockReturnValueOnce(mockChain);
+    mockSupabaseClient.from.mockReturnValue(mockChain);
 
-    await expect(apiKeyService.getActiveKey(testPlatform))
-      .rejects
-      .toThrow('No active API key found for platform: twitter');
+    const result = await apiKeyService.getActiveKey(testPlatform);
+
+    expect(result).toEqual({
+      data: null,
+      error: {
+        code: 'KEY_NOT_FOUND',
+        message: `No active API key found for platform: ${testPlatform}`
+      }
+    });
   });
 
   it('should return valid non-expired key', async () => {
     const futureDate = new Date();
-    futureDate.setDate(futureDate.getDate() + 7); // 7 days from now
+    futureDate.setDate(futureDate.getDate() + 1); // Tomorrow
 
     const mockResponse = {
       data: [{
@@ -120,23 +117,26 @@ describe('APIKeyService Expiration', () => {
         key_name: testKeyName,
         encrypted_key: encryptedKey,
         expires_at: futureDate.toISOString(),
-        is_active: true
+        is_active: true,
+        metadata: null
       }],
       error: null
     };
 
     const mockChain = {
       select: vi.fn().mockReturnThis(),
-      insert: vi.fn().mockReturnThis(),
-      update: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
-      limit: vi.fn().mockResolvedValueOnce(mockResponse)
+      limit: vi.fn().mockResolvedValue(mockResponse)
     };
 
-    mockSupabaseClient.from.mockReturnValueOnce(mockChain);
+    mockSupabaseClient.from.mockReturnValue(mockChain);
 
     const result = await apiKeyService.getActiveKey(testPlatform);
-    expect(result).toBe(testApiKey);
+
+    expect(result).toEqual({
+      data: testApiKey,
+      error: null
+    });
   });
 
   it('should handle keys with no expiration date', async () => {
@@ -146,22 +146,26 @@ describe('APIKeyService Expiration', () => {
         platform_type: testPlatform,
         key_name: testKeyName,
         encrypted_key: encryptedKey,
-        is_active: true
+        expires_at: null,
+        is_active: true,
+        metadata: null
       }],
       error: null
     };
 
     const mockChain = {
       select: vi.fn().mockReturnThis(),
-      insert: vi.fn().mockReturnThis(),
-      update: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
-      limit: vi.fn().mockResolvedValueOnce(mockResponse)
+      limit: vi.fn().mockResolvedValue(mockResponse)
     };
 
-    mockSupabaseClient.from.mockReturnValueOnce(mockChain);
+    mockSupabaseClient.from.mockReturnValue(mockChain);
 
     const result = await apiKeyService.getActiveKey(testPlatform);
-    expect(result).toBe(testApiKey);
+
+    expect(result).toEqual({
+      data: testApiKey,
+      error: null
+    });
   });
 }); 

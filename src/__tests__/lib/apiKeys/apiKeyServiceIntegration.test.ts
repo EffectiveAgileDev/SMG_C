@@ -3,25 +3,13 @@ import type { APIKey, PlatformType } from '../../../lib/apiKeys/types';
 import { APIKeyService } from '../../../lib/apiKeys/apiKeyService';
 import type { EncryptionService } from '../../../lib/encryption/encryptionService';
 
-// Mock Supabase client with properly chained methods
+// Mock Supabase client
 const mockSupabaseClient = {
-  from: vi.fn(() => ({
-    select: vi.fn().mockReturnThis(),
-    insert: vi.fn().mockReturnThis(),
-    update: vi.fn().mockReturnThis(),
-    eq: vi.fn().mockReturnThis(),
-    single: vi.fn().mockReturnThis(),
-    limit: vi.fn().mockReturnThis(),
-  })),
-};
-
-type MockEncryptionService = {
-  encrypt: ReturnType<typeof vi.fn>;
-  decrypt: ReturnType<typeof vi.fn>;
+  from: vi.fn(),
 };
 
 // Mock encryption service
-const mockEncryptionService: MockEncryptionService = {
+const mockEncryptionService = {
   encrypt: vi.fn(),
   decrypt: vi.fn(),
 };
@@ -52,22 +40,22 @@ describe('APIKeyService with Encryption', () => {
       error: null
     };
 
-    // Create a mock chain that returns itself for all methods except the final one
+    // Mock the checkPlatformKeyLimit method
+    const mockCheckLimit = vi.fn().mockResolvedValue(true);
+    apiKeyService['checkPlatformKeyLimit'] = mockCheckLimit;
+
     const mockChain = {
-      select: vi.fn().mockReturnThis(),
       insert: vi.fn().mockReturnThis(),
-      update: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockReturnThis(),
-      single: vi.fn().mockResolvedValueOnce(mockInsertResponse),
-      limit: vi.fn().mockReturnThis()
+      select: vi.fn().mockReturnThis(),
+      single: vi.fn().mockResolvedValue(mockInsertResponse)
     };
 
-    // Set up the mock chain
-    mockSupabaseClient.from.mockReturnValueOnce(mockChain);
+    mockSupabaseClient.from.mockReturnValue(mockChain);
 
     const result = await apiKeyService.addKey(testPlatform, testApiKey, testKeyName);
 
     expect(mockEncryptionService.encrypt).toHaveBeenCalledWith(testApiKey);
+    expect(mockCheckLimit).toHaveBeenCalledWith(testPlatform);
     expect(mockChain.insert).toHaveBeenCalledWith({
       platform_type: testPlatform,
       key_name: testKeyName,
@@ -77,11 +65,14 @@ describe('APIKeyService with Encryption', () => {
     expect(mockChain.select).toHaveBeenCalled();
     expect(mockChain.single).toHaveBeenCalled();
     expect(result).toEqual({
-      id: '1',
-      platformType: testPlatform,
-      keyName: testKeyName,
-      encryptedKey: encryptedKey,
-      isActive: true
+      data: {
+        id: '1',
+        platformType: testPlatform,
+        keyName: testKeyName,
+        encryptedKey: encryptedKey,
+        isActive: true
+      },
+      error: null
     });
   });
 
@@ -99,23 +90,21 @@ describe('APIKeyService with Encryption', () => {
       error: null
     };
 
-    // Create a mock chain that returns itself for all methods except the final one
     const mockChain = {
       select: vi.fn().mockReturnThis(),
-      insert: vi.fn().mockReturnThis(),
-      update: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
-      single: vi.fn().mockReturnThis(),
-      limit: vi.fn().mockResolvedValueOnce(mockResponse)
+      limit: vi.fn().mockResolvedValue(mockResponse)
     };
 
-    // Set up the mock chain
-    mockSupabaseClient.from.mockReturnValueOnce(mockChain);
+    mockSupabaseClient.from.mockReturnValue(mockChain);
 
     const result = await apiKeyService.getActiveKey(testPlatform);
 
     expect(mockEncryptionService.decrypt).toHaveBeenCalledWith(encryptedKey);
-    expect(result).toBe(testApiKey);
+    expect(result).toEqual({
+      data: testApiKey,
+      error: null
+    });
     expect(mockChain.select).toHaveBeenCalled();
     expect(mockChain.eq).toHaveBeenCalledWith('platform_type', testPlatform);
     expect(mockChain.eq).toHaveBeenCalledWith('is_active', true);
@@ -123,15 +112,16 @@ describe('APIKeyService with Encryption', () => {
   });
 
   it('should handle encryption errors gracefully', async () => {
-    const mockFrom = mockSupabaseClient.from();
-    mockFrom.insert.mockReturnThis();
-    mockFrom.select.mockReturnThis();
-    mockFrom.single.mockResolvedValueOnce({ data: null, error: null });
-
     mockEncryptionService.encrypt.mockRejectedValueOnce(new Error('Failed to encrypt API key'));
 
-    await expect(apiKeyService.addKey(testPlatform, testApiKey, testKeyName))
-      .rejects.toThrow('Failed to encrypt API key');
+    const result = await apiKeyService.addKey(testPlatform, testApiKey, testKeyName);
+    expect(result).toEqual({
+      data: null,
+      error: {
+        code: 'ENCRYPTION_FAILED',
+        message: 'Failed to encrypt API key'
+      }
+    });
   });
 
   it('should handle decryption errors gracefully', async () => {
@@ -148,22 +138,23 @@ describe('APIKeyService with Encryption', () => {
       error: null
     };
 
-    // Create a mock chain that returns itself for all methods except the final one
     const mockChain = {
       select: vi.fn().mockReturnThis(),
-      insert: vi.fn().mockReturnThis(),
-      update: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
-      single: vi.fn().mockReturnThis(),
-      limit: vi.fn().mockResolvedValueOnce(mockResponse)
+      limit: vi.fn().mockResolvedValue(mockResponse)
     };
 
-    // Set up the mock chain
-    mockSupabaseClient.from.mockReturnValueOnce(mockChain);
+    mockSupabaseClient.from.mockReturnValue(mockChain);
 
     mockEncryptionService.decrypt.mockRejectedValueOnce(new Error('Failed to decrypt API key'));
 
-    await expect(apiKeyService.getActiveKey(testPlatform))
-      .rejects.toThrow('Failed to decrypt API key');
+    const result = await apiKeyService.getActiveKey(testPlatform);
+    expect(result).toEqual({
+      data: null,
+      error: {
+        code: 'DECRYPTION_FAILED',
+        message: 'Failed to decrypt API key'
+      }
+    });
   });
 }); 

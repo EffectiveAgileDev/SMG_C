@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import type { APIKey } from '../../../lib/apiKeys/types';
+import type { APIKey, APIKeyResult } from '../../../lib/apiKeys/types';
 import { APIKeyService } from '../../../lib/apiKeys/apiKeyService';
 import type { EncryptionService } from '../../../lib/encryption/encryptionService';
 import type { SupabaseClient } from '@supabase/supabase-js';
@@ -122,7 +122,7 @@ describe('API Key Service', () => {
       });
       expect(mockChain.select).toHaveBeenCalled();
       expect(mockChain.single).toHaveBeenCalled();
-      expect(result).toEqual(mockApiKey);
+      expect(result).toEqual({ data: mockApiKey, error: null });
     });
 
     it('should list API keys for a platform', async () => {
@@ -138,7 +138,7 @@ describe('API Key Service', () => {
       
       expect(mockChain.select).toHaveBeenCalled();
       expect(mockChain.eq).toHaveBeenCalledWith('platform_type', 'twitter');
-      expect(result).toEqual([mockApiKey]);
+      expect(result).toEqual({ data: [mockApiKey], error: null });
     });
 
     it('should deactivate an API key', async () => {
@@ -150,10 +150,11 @@ describe('API Key Service', () => {
         }))
       );
       
-      await apiKeyService.deactivateKey('123');
+      const result = await apiKeyService.deactivateKey('123');
       
       expect(mockChain.update).toHaveBeenCalledWith({ is_active: false });
       expect(mockChain.eq).toHaveBeenCalledWith('id', '123');
+      expect(result).toEqual({ data: true, error: null });
     });
 
     it('should get an active key for a platform', async () => {
@@ -172,19 +173,24 @@ describe('API Key Service', () => {
       expect(mockChain.eq).toHaveBeenCalledWith('is_active', true);
       expect(mockChain.limit).toHaveBeenCalledWith(1);
       expect(mockEncryptionService.decrypt).toHaveBeenCalledWith(mockDbKey.encrypted_key);
-      expect(result).toBe('decrypted-key-123');
+      expect(result).toEqual({ data: 'decrypted-key-123', error: null });
     });
 
-    it('should throw error when no active key found', async () => {
+    it('should return error when no active key found', async () => {
       // Override limit response for select with empty data
       mockChain.limit.mockImplementation(() => Promise.resolve({
         data: [],
         error: null
       }));
 
-      await expect(apiKeyService.getActiveKey('twitter'))
-        .rejects
-        .toThrow('No active API key found for platform: twitter');
+      const result = await apiKeyService.getActiveKey('twitter');
+      expect(result).toEqual({
+        data: null,
+        error: {
+          code: 'KEY_NOT_FOUND',
+          message: 'No active API key found for platform: twitter'
+        }
+      });
     });
   });
 }); 
