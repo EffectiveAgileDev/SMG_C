@@ -34,6 +34,11 @@ const testGroups: TestGroup[] = [
     name: 'Middleware',
     pattern: './src/__tests__/lib/middleware/**/*.test.ts',
     description: 'API middleware and validation tests'
+  },
+  {
+    name: 'Image Library',
+    pattern: './src/__tests__/lib/imageLibrary/**/*.test.ts',
+    description: 'Image import, storage, and processing tests'
   }
 ];
 
