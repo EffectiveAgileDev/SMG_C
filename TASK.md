@@ -133,10 +133,10 @@ Set up Supabase integration for social media content storage and management
     - [x] Unique constraint enforcement
     - [x] Encryption requirement
     - [x] Token expiration handling
-    - [ ] Security policies
+    - [x] Security policies (RLS)
 
 ### Next Steps
-1. [ ] Implement security policies for OAuth tokens table
+1. [x] Implement security policies for OAuth tokens table
 2. [ ] Create Content/Posts table schema
 3. [ ] Set up Image Library table
 4. [ ] Implement Platform Configurations

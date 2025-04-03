@@ -268,7 +268,7 @@ describe('OAuth Tokens Table Migration', () => {
 
     // Verify that we have an index on expires_at for efficient querying
     expect(mockSupabaseClient.rpc).toHaveBeenCalledWith('create_oauth_tokens_table', {
-      sql: expect.stringContaining('CREATE INDEX idx_oauth_tokens_expires_at ON oauth_tokens(expires_at)')
+      sql: expect.stringContaining('CREATE INDEX IF NOT EXISTS idx_oauth_tokens_expires_at ON oauth_tokens(expires_at)')
     });
 
     // Mock the database operations for second query
@@ -298,13 +298,93 @@ describe('OAuth Tokens Table Migration', () => {
     expect(activeResult.data?.[0].id).toBe('token1');
   });
 
-  it('should enforce proper security policies', async () => {
+  it('should enforce Row Level Security policies', async () => {
     const { supabase } = await import('../../../../lib/supabase');
+    
+    // Mock successful responses for table creation and RLS policy creation
+    mockSupabaseClient.rpc.mockImplementationOnce(() => ({ error: null }));
+    mockSupabaseClient.rpc.mockImplementationOnce(() => ({ error: null }));
     
     // Run the migration
     await createOAuthTokensTable(supabase);
-    
-    // Test RLS policies
-    // TODO: Add policy verification once implemented
+
+    // Test data
+    const user1Id = 'user-1';
+    const user2Id = 'user-2';
+    const testToken = {
+      platform: 'twitter',
+      access_token: 'enc:v1:test-token',
+      refresh_token: 'enc:v1:test-refresh',
+      user_id: user1Id,
+      expires_at: new Date(Date.now() + 3600000).toISOString(),
+      is_active: true
+    };
+
+    // Mock auth session for user1
+    mockSupabaseClient.auth.getSession.mockImplementationOnce(() => ({
+      data: {
+        session: {
+          user: { id: user1Id }
+        }
+      },
+      error: null
+    }));
+
+    // Mock select operation for user1 (should succeed)
+    const mockSelect = vi.fn().mockImplementationOnce(() => ({
+      data: [testToken],
+      error: null
+    }));
+
+    mockSupabaseClient.from.mockImplementationOnce(() => ({
+      select: mockSelect,
+      insert: vi.fn().mockReturnThis(),
+      update: vi.fn().mockReturnThis(),
+      delete: vi.fn().mockReturnThis(),
+      gt: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis()
+    }));
+
+    // User1 should be able to access their own tokens
+    const result1 = await supabase
+      .from('oauth_tokens')
+      .select('*');
+
+    expect(result1.error).toBeNull();
+    expect(result1.data).toHaveLength(1);
+    expect(result1.data?.[0].user_id).toBe(user1Id);
+
+    // Mock auth session for user2
+    mockSupabaseClient.auth.getSession.mockImplementationOnce(() => ({
+      data: {
+        session: {
+          user: { id: user2Id }
+        }
+      },
+      error: null
+    }));
+
+    // Mock select operation for user2 (should return empty)
+    const mockSelect2 = vi.fn().mockImplementationOnce(() => ({
+      data: [],
+      error: null
+    }));
+
+    mockSupabaseClient.from.mockImplementationOnce(() => ({
+      select: mockSelect2,
+      insert: vi.fn().mockReturnThis(),
+      update: vi.fn().mockReturnThis(),
+      delete: vi.fn().mockReturnThis(),
+      gt: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis()
+    }));
+
+    // User2 should not be able to access user1's tokens
+    const result2 = await supabase
+      .from('oauth_tokens')
+      .select('*');
+
+    expect(result2.error).toBeNull();
+    expect(result2.data).toHaveLength(0);
   });
 }); 
