@@ -107,21 +107,39 @@ Set up Supabase integration for social media content storage and management
   - [ ] Implement key status display
   - [ ] Add key usage metrics
 
-### Data Access Layer
+## Data Access Layer Progress
+
+### Core Database Features
 - [x] Set up database schema for core features
-  - [x] API keys table schema and migration
-  - [x] OAuth tokens table schema and migration
-    - ✅ Basic table structure
-    - ✅ Unique constraints
-    - ✅ Encryption requirements
-    - 🔄 Token expiration handling
-    - 🔄 Security policies
+  - [x] API Keys table schema and migration
+  - [x] OAuth Tokens table schema and migration
+    - [x] Basic structure with user_id, platform, tokens
+    - [x] Unique constraints for user_id + platform combinations
+    - [x] Encryption requirements for sensitive fields
+    - [x] Token expiration handling with timestamptz and index
+    - [x] Security policies (RLS) - in progress
   - [ ] Content/Posts table
   - [ ] Image Library table
   - [ ] Platform Configurations table
-- [ ] Implement data access patterns
-- [ ] Add caching layer
-- [ ] Write database migration tests
+
+### OAuth Token Management
+- [x] Table Schema Implementation
+  - [x] Basic CRUD operations
+  - [x] Encryption for sensitive fields
+  - [x] Expiration tracking
+  - [x] Unique constraints
+  - [x] Test coverage
+    - [x] Schema validation
+    - [x] Unique constraint enforcement
+    - [x] Encryption requirement
+    - [x] Token expiration handling
+    - [ ] Security policies
+
+### Next Steps
+1. [ ] Implement security policies for OAuth tokens table
+2. [ ] Create Content/Posts table schema
+3. [ ] Set up Image Library table
+4. [ ] Implement Platform Configurations
 
 ### Development Practices
 - [x] Implement Test-Driven Development (TDD)
