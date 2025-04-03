@@ -1,15 +1,27 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { AuthError, User } from '@supabase/supabase-js';
 
-// Create mock AuthError class
-class MockAuthError extends AuthError {
-  constructor(message: string, status: number, code: string) {
-    super(message);
-    this.name = 'AuthError';
-    this.status = status;
-    this.code = code;
+// Mock Supabase module first
+vi.mock('@supabase/supabase-js', () => {
+  class MockAuthError extends Error {
+    name = 'AuthError';
+    status: number;
+    code: string;
+
+    constructor(message: string, status: number, code: string) {
+      super(message);
+      this.status = status;
+      this.code = code;
+    }
   }
-}
+
+  return {
+    createClient: vi.fn(() => mockSupabaseClient),
+    AuthError: MockAuthError
+  };
+});
+
+// Then import from the mocked module
+import { AuthError, User } from '@supabase/supabase-js';
 
 // Mock user data
 const mockUser: User = {
@@ -48,10 +60,6 @@ const mockSupabaseClient = {
   }
 };
 
-vi.mock('@supabase/supabase-js', () => ({
-  createClient: vi.fn(() => mockSupabaseClient)
-}));
-
 describe('Auth Service', () => {
   beforeEach(() => {
     vi.resetModules();
@@ -82,7 +90,7 @@ describe('Auth Service', () => {
     });
 
     it('should handle signup errors', async () => {
-      const mockError = new MockAuthError(
+      const mockError = new AuthError(
         'Email already registered',
         400,
         'auth/email-already-in-use'
@@ -112,7 +120,7 @@ describe('Auth Service', () => {
     });
 
     it('should handle signin errors', async () => {
-      const mockError = new MockAuthError(
+      const mockError = new AuthError(
         'Invalid credentials',
         401,
         'auth/invalid-credentials'

@@ -6,5 +6,10 @@ export default defineConfig({
     globals: true,
     setupFiles: ['./tests/setup.ts'],
     include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
+    threads: false,
+    sequence: {
+      hooks: 'list'
+    },
+    isolate: true
   },
-}); 
+});

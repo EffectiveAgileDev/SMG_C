@@ -22,8 +22,8 @@ vi.mock('@supabase/supabase-js', () => ({
 
 describe('Supabase Client', () => {
   const mockEnv = {
-    VITE_SUPABASE_URL: 'https://example.supabase.co',
-    VITE_SUPABASE_ANON_KEY: 'example-anon-key'
+    VITE_SUPABASE_URL: 'https://SMG_C.supabase.co',
+    VITE_SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhubWdmaG5zbWtjZ3lzYmNteWNoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDM2MTQwMjMsImV4cCI6MjA1OTE5MDAyM30.ghINEpHxRqiTypvfMA59qjKVU9HUrtU6zmouDzljaE8'
   };
 
   beforeEach(() => {

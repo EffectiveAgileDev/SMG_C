@@ -12,6 +12,11 @@
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage",
+    "test:auth": "vitest run src/__tests__/lib/auth",
+    "test:apikeys": "vitest run src/__tests__/lib/apiKeys",
+    "test:db": "vitest run src/__tests__/lib/db",
+    "test:middleware": "vitest run src/__tests__/lib/middleware",
+    "test:sequential": "tsx scripts/run-tests.ts",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
   },
   "dependencies": {
@@ -24,6 +29,7 @@
   "devDependencies": {
     "@tauri-apps/cli": "^2.4.1",
     "@types/express": "^5.0.1",
+    "@types/glob": "^8.1.0",
     "@types/node": "^22.13.17",
     "@types/react": "^18.3.20",
     "@types/react-dom": "^18.3.5",
@@ -32,13 +38,18 @@
     "@vitejs/plugin-react": "^4.3.4",
     "@vitest/ui": "latest",
     "autoprefixer": "^10.4.21",
+    "chalk": "^5.4.1",
     "eslint": "^9.23.0",
     "eslint-config-prettier": "^10.1.1",
     "eslint-plugin-react": "^7.37.4",
     "eslint-plugin-react-hooks": "^5.2.0",
+    "execa": "^9.5.2",
+    "glob": "^11.0.1",
     "postcss": "^8.5.3",
     "prettier": "^3.5.3",
     "tailwindcss": "^4.1.0",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.19.3",
     "typescript": "~5.6.2",
     "vite": "^6.0.3",
     "vitest": "latest"
