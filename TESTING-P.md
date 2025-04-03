@@ -219,4 +219,53 @@ it('should handle state changes', () => {
   // Assert
   expect(newState.value).toBe(1);
 });
+```
+
+## Vitest-Specific Mocking Considerations
+
+### Module Mock Hoisting
+```typescript
+// CORRECT: Mock definition in vi.mock()
+vi.mock('module-name', () => ({
+  default: vi.fn().mockImplementation(() => ({
+    someMethod: vi.fn()
+  }))
+}));
+
+// INCORRECT: Don't define mocks outside vi.mock()
+const mockFn = vi.fn();  // This won't work with hoisting
+vi.mock('module-name', () => ({
+  default: mockFn
+}));
+```
+
+### Changing Mock Behavior
+```typescript
+// CORRECT: Change behavior for specific test
+it('should handle specific case', async () => {
+  const module = await import('module-name');
+  vi.mocked(module.default).mockImplementationOnce(() => {
+    throw new Error('Test error');
+  });
+});
+
+// INCORRECT: Don't modify mock outside test
+const mockFn = vi.fn();
+mockFn.mockImplementation(() => {
+  throw new Error('Test error');
+});
+```
+
+### Mock Reset Best Practices
+```typescript
+describe('Test Suite', () => {
+  beforeEach(() => {
+    vi.resetModules();  // Reset modules between tests
+    vi.clearAllMocks(); // Clear mock calls and implementations
+  });
+
+  afterEach(() => {
+    vi.clearAllMocks(); // Clean up after each test
+  });
+});
 ``` 
