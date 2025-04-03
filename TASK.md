@@ -158,12 +158,6 @@ Set up Supabase integration for social media content storage and management
     - [x] Token expiration handling
     - [x] Security policies (RLS)
 
-### Next Steps
-1. [x] Implement security policies for OAuth tokens table
-2. [x] Create Content/Posts table schema
-3. [ ] Set up Image Library table
-4. [ ] Implement Platform Configurations
-
 ### Development Practices
 - [x] Implement Test-Driven Development (TDD)
 - [x] Set up continuous integration
