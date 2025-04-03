@@ -108,7 +108,17 @@ Set up Supabase integration for social media content storage and management
   - [ ] Add key usage metrics
 
 ### Data Access Layer
-- [ ] Set up database schema for core features
+- [x] Set up database schema for core features
+  - [x] API keys table schema and migration
+  - [x] OAuth tokens table schema and migration
+    - ✅ Basic table structure
+    - ✅ Unique constraints
+    - ✅ Encryption requirements
+    - 🔄 Token expiration handling
+    - 🔄 Security policies
+  - [ ] Content/Posts table
+  - [ ] Image Library table
+  - [ ] Platform Configurations table
 - [ ] Implement data access patterns
 - [ ] Add caching layer
 - [ ] Write database migration tests
@@ -144,6 +154,7 @@ Set up Supabase integration for social media content storage and management
 - [ ] Consider adding rate limiting for API key usage
 - [ ] Plan for key rotation notifications
 - [ ] Consider adding audit logging for key operations
+- [x] OAuth token table implementation progressing well (3/5 test cases complete)
 
 See PLANNING-P.md for detailed technical documentation and architecture
 
