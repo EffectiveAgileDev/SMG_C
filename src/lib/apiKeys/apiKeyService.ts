@@ -1,20 +1,70 @@
 import { supabase } from '../supabase';
 import { EncryptionService } from '../encryption/encryptionService';
-import type { APIKey, APIKeyService as APIKeyServiceInterface, KeyValidationResult, PlatformType } from './types';
+import { APIKeyErrorCode } from './types';
+import type { 
+  APIKey, 
+  APIKeyService as APIKeyServiceInterface, 
+  KeyValidationResult, 
+  PlatformType,
+  APIKeyConfig,
+  APIKeyError,
+  APIKeyResult
+} from './types';
 
 export class APIKeyService implements APIKeyServiceInterface {
-  private supabase = supabase;
-  private encryptionService: EncryptionService;
+  private readonly supabase = supabase;
+  private readonly encryptionService: EncryptionService;
+  private readonly config: APIKeyConfig;
 
-  constructor(supabaseClient = supabase, encryptionService = new EncryptionService()) {
+  constructor(
+    supabaseClient = supabase, 
+    encryptionService = new EncryptionService(),
+    config: Partial<APIKeyConfig> = {}
+  ) {
     this.supabase = supabaseClient;
     this.encryptionService = encryptionService;
+    this.config = {
+      minKeyNameLength: 3,
+      maxKeyNameLength: 50,
+      allowMultipleActiveKeys: false,
+      maxKeysPerPlatform: 5,
+      ...config
+    };
   }
 
-  async addKey(platform: PlatformType, key: string, name: string, expiresAt?: Date): Promise<APIKey> {
+  async addKey(
+    platform: PlatformType, 
+    key: string, 
+    name: string, 
+    expiresAt?: Date
+  ): Promise<APIKeyResult<APIKey>> {
+    // Validate inputs
+    const validationError = this.validateKeyInput(name);
+    if (validationError) {
+      return this.createErrorResponse(validationError);
+    }
+
     try {
-      const encryptedKey = await this.encryptionService.encrypt(key);
+      // Encrypt key first to catch encryption errors before checking limits
+      let encryptedKey: string;
+      try {
+        encryptedKey = await this.encryptionService.encrypt(key);
+      } catch (error) {
+        return this.createErrorResponse({
+          code: APIKeyErrorCode.ENCRYPTION_FAILED,
+          message: 'Failed to encrypt API key'
+        });
+      }
+
+      // Check platform key limits
+      if (!await this.checkPlatformKeyLimit(platform)) {
+        return this.createErrorResponse({
+          code: APIKeyErrorCode.VALIDATION_ERROR,
+          message: `Maximum number of keys (${this.config.maxKeysPerPlatform}) reached for platform ${platform}`
+        });
+      }
       
+      // Insert into database
       const { data, error } = await this.supabase
         .from('api_keys')
         .insert({
@@ -27,17 +77,28 @@ export class APIKeyService implements APIKeyServiceInterface {
         .select()
         .single();
 
-      if (error) throw error;
-      return this.mapDatabaseKeyToAPIKey(data);
-    } catch (error) {
-      if (error instanceof Error && error.message.includes('encrypt')) {
-        throw new Error('Failed to encrypt API key');
+      if (error) {
+        return this.createErrorResponse({
+          code: APIKeyErrorCode.DATABASE_ERROR,
+          message: 'Failed to save API key',
+          details: { error: error.message }
+        });
       }
-      throw error;
+
+      return {
+        data: this.mapDatabaseKeyToAPIKey(data),
+        error: null
+      };
+    } catch (error) {
+      return this.createErrorResponse({
+        code: APIKeyErrorCode.DATABASE_ERROR,
+        message: 'Unexpected error adding key',
+        details: { error: error instanceof Error ? error.message : String(error) }
+      });
     }
   }
 
-  async rotateKey(keyId: string, newKey: string): Promise<APIKey> {
+  async rotateKey(keyId: string, newKey: string): Promise<APIKeyResult<APIKey>> {
     try {
       const encryptedKey = await this.encryptionService.encrypt(newKey);
       
@@ -51,41 +112,84 @@ export class APIKeyService implements APIKeyServiceInterface {
         .select()
         .single();
 
-      if (error) throw error;
-      return this.mapDatabaseKeyToAPIKey(data);
+      if (error) {
+        return this.createErrorResponse({
+          code: APIKeyErrorCode.DATABASE_ERROR,
+          message: 'Failed to rotate API key',
+          details: { error: error.message }
+        });
+      }
+
+      return {
+        data: this.mapDatabaseKeyToAPIKey(data),
+        error: null
+      };
     } catch (error) {
       if (error instanceof Error && error.message.includes('encrypt')) {
-        throw new Error('Failed to encrypt API key');
+        return this.createErrorResponse({
+          code: APIKeyErrorCode.ENCRYPTION_FAILED,
+          message: 'Failed to encrypt new API key'
+        });
       }
-      throw error;
+      return this.createErrorResponse({
+        code: APIKeyErrorCode.DATABASE_ERROR,
+        message: 'Unexpected error rotating key',
+        details: { error: error instanceof Error ? error.message : String(error) }
+      });
     }
   }
 
-  async deactivateKey(keyId: string): Promise<void> {
+  async deactivateKey(keyId: string): Promise<APIKeyResult<boolean>> {
     const { error } = await this.supabase
       .from('api_keys')
       .update({ is_active: false })
       .eq('id', keyId);
 
-    if (error) throw error;
-  }
-
-  async listKeys(platform?: PlatformType): Promise<APIKey[]> {
-    let query = this.supabase
-      .from('api_keys')
-      .select();
-
-    if (platform) {
-      query = query.eq('platform_type', platform);
+    if (error) {
+      return this.createErrorResponse({
+        code: APIKeyErrorCode.DATABASE_ERROR,
+        message: 'Failed to deactivate API key',
+        details: { error: error.message }
+      });
     }
 
-    const { data, error } = await query;
-
-    if (error) throw error;
-    return data.map(this.mapDatabaseKeyToAPIKey);
+    return { data: true, error: null };
   }
 
-  async getActiveKey(platform: PlatformType): Promise<string> {
+  async listKeys(platform?: PlatformType): Promise<APIKeyResult<APIKey[]>> {
+    try {
+      let query = this.supabase
+        .from('api_keys')
+        .select();
+
+      if (platform) {
+        query = query.eq('platform_type', platform);
+      }
+
+      const { data, error } = await query;
+
+      if (error) {
+        return this.createErrorResponse({
+          code: APIKeyErrorCode.DATABASE_ERROR,
+          message: 'Failed to list API keys',
+          details: { error: error.message }
+        });
+      }
+
+      return {
+        data: data.map(this.mapDatabaseKeyToAPIKey),
+        error: null
+      };
+    } catch (error) {
+      return this.createErrorResponse({
+        code: APIKeyErrorCode.DATABASE_ERROR,
+        message: 'Unexpected error listing keys',
+        details: { error: error instanceof Error ? error.message : String(error) }
+      });
+    }
+  }
+
+  async getActiveKey(platform: PlatformType): Promise<APIKeyResult<string>> {
     try {
       const { data, error } = await this.supabase
         .from('api_keys')
@@ -94,9 +198,19 @@ export class APIKeyService implements APIKeyServiceInterface {
         .eq('is_active', true)
         .limit(1);
 
-      if (error) throw error;
+      if (error) {
+        return this.createErrorResponse({
+          code: APIKeyErrorCode.DATABASE_ERROR,
+          message: 'Failed to retrieve active API key',
+          details: { error: error.message }
+        });
+      }
+
       if (!data || data.length === 0) {
-        throw new Error(`No active API key found for platform: ${platform}`);
+        return this.createErrorResponse({
+          code: APIKeyErrorCode.KEY_NOT_FOUND,
+          message: `No active API key found for platform: ${platform}`
+        });
       }
 
       const key = data[0];
@@ -106,33 +220,90 @@ export class APIKeyService implements APIKeyServiceInterface {
       if (key.expires_at) {
         const expirationDate = new Date(key.expires_at);
         if (expirationDate <= now) {
-          throw new Error(`No active API key found for platform: ${platform}`);
+          return this.createErrorResponse({
+            code: APIKeyErrorCode.KEY_EXPIRED,
+            message: `API key for platform ${platform} has expired`,
+            details: { expiredAt: expirationDate }
+          });
         }
       }
 
-      const decryptedKey = await this.encryptionService.decrypt(key.encrypted_key);
-      return decryptedKey;
-    } catch (error) {
-      if (error instanceof Error && error.message.includes('decrypt')) {
-        throw new Error('Failed to decrypt API key');
+      try {
+        const decryptedKey = await this.encryptionService.decrypt(key.encrypted_key);
+        return {
+          data: decryptedKey,
+          error: null
+        };
+      } catch (error) {
+        return this.createErrorResponse({
+          code: APIKeyErrorCode.DECRYPTION_FAILED,
+          message: 'Failed to decrypt API key'
+        });
       }
-      throw error;
+    } catch (error) {
+      return this.createErrorResponse({
+        code: APIKeyErrorCode.DATABASE_ERROR,
+        message: 'Unexpected error getting active key',
+        details: { error: error instanceof Error ? error.message : String(error) }
+      });
     }
   }
 
   async validateKey(platform: PlatformType, key: string): Promise<KeyValidationResult> {
-    try {
-      const activeKey = await this.getActiveKey(platform);
-      return {
-        isValid: activeKey === key,
-        error: activeKey !== key ? 'Invalid API key' : undefined
-      };
-    } catch (error) {
+    const activeKeyResult = await this.getActiveKey(platform);
+
+    if (activeKeyResult.error) {
       return {
         isValid: false,
-        error: error instanceof Error ? error.message : 'Unknown error validating key'
+        error: activeKeyResult.error
       };
     }
+
+    return {
+      isValid: activeKeyResult.data === key,
+      error: activeKeyResult.data !== key ? {
+        code: APIKeyErrorCode.INVALID_KEY,
+        message: 'Invalid API key'
+      } : undefined
+    };
+  }
+
+  private validateKeyInput(name: string): APIKeyError | null {
+    if (name.length < this.config.minKeyNameLength) {
+      return {
+        code: APIKeyErrorCode.VALIDATION_ERROR,
+        message: `Key name must be at least ${this.config.minKeyNameLength} characters long`
+      };
+    }
+
+    if (name.length > this.config.maxKeyNameLength) {
+      return {
+        code: APIKeyErrorCode.VALIDATION_ERROR,
+        message: `Key name cannot exceed ${this.config.maxKeyNameLength} characters`
+      };
+    }
+
+    return null;
+  }
+
+  private async checkPlatformKeyLimit(platform: PlatformType): Promise<boolean> {
+    if (!this.config.maxKeysPerPlatform) {
+      return true;
+    }
+
+    const result = await this.listKeys(platform);
+    if (result.error || !result.data) {
+      return false;
+    }
+
+    return result.data.length < this.config.maxKeysPerPlatform;
+  }
+
+  private createErrorResponse<T>(error: APIKeyError): APIKeyResult<T> {
+    return {
+      data: null,
+      error
+    };
   }
 
   private mapDatabaseKeyToAPIKey(dbKey: any): APIKey {

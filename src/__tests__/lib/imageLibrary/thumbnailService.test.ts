@@ -1,27 +1,29 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { ThumbnailService } from '../../../lib/imageLibrary/thumbnailService';
-import { ThumbnailConfig, ThumbnailResult } from '../../../lib/types/image';
+import { ThumbnailConfig, ThumbnailResult, ThumbnailErrorCode } from '../../../lib/types/image';
 
 // Mock sharp
-vi.mock('sharp', () => ({
-  default: vi.fn(() => ({
-    resize: vi.fn().mockReturnThis(),
-    toFormat: vi.fn().mockReturnThis(),
-    toBuffer: vi.fn().mockResolvedValue(Buffer.from('processed-image')),
-    metadata: vi.fn().mockResolvedValue({
-      width: 300,
-      height: 300,
-      format: 'webp'
-    })
-  }))
-}));
+vi.mock('sharp', () => {
+  return {
+    default: vi.fn().mockImplementation(() => ({
+      resize: vi.fn().mockReturnThis(),
+      toFormat: vi.fn().mockReturnThis(),
+      toBuffer: vi.fn().mockResolvedValue(Buffer.from('processed-image')),
+      metadata: vi.fn().mockResolvedValue({
+        width: 300,
+        height: 300,
+        format: 'webp'
+      })
+    }))
+  };
+});
 
 // Mock Supabase client following our standards
 const mockStorage = {
   from: vi.fn().mockReturnValue({
     download: vi.fn().mockResolvedValue({ data: null, error: null }),
-    upload: vi.fn().mockResolvedValue({ data: null, error: null }),
+    upload: vi.fn().mockResolvedValue({ data: { path: '' }, error: null }),
     remove: vi.fn().mockResolvedValue({ data: null, error: null }),
     getPublicUrl: vi.fn().mockReturnValue({ data: { publicUrl: '' } })
   })
@@ -66,25 +68,28 @@ describe('Thumbnail Service', () => {
     const expectedThumbnailPath = 'thumbnails/test-image-id.webp';
     const expectedPublicUrl = 'https://example.com/thumbnails/test-image-id.webp';
 
-    // Mock successful image download
-    mockStorage.from().download.mockResolvedValue({
-      data: Buffer.from('fake-image-data'),
+    // Mock successful image download with Blob-like data
+    const mockBlob = new Blob(['fake-image-data'], { type: 'image/jpeg' });
+    mockBlob.arrayBuffer = () => Promise.resolve(new ArrayBuffer(10));
+    
+    mockStorage.from().download.mockResolvedValueOnce({
+      data: mockBlob,
       error: null
     });
 
     // Mock successful thumbnail upload
-    mockStorage.from().upload.mockResolvedValue({
+    mockStorage.from().upload.mockResolvedValueOnce({
       data: { path: expectedThumbnailPath },
       error: null
     });
 
     // Mock public URL generation
-    mockStorage.from().getPublicUrl.mockReturnValue({
+    mockStorage.from().getPublicUrl.mockReturnValueOnce({
       data: { publicUrl: expectedPublicUrl }
     });
 
     // Mock database update
-    mockDatabase.from().update().eq.mockResolvedValue({
+    mockDatabase.from().update().eq.mockResolvedValueOnce({
       data: { id: imageId, thumbnail_path: expectedThumbnailPath },
       error: null
     });
@@ -123,7 +128,7 @@ describe('Thumbnail Service', () => {
     const originalPath = 'images/non-existent.jpg';
 
     // Mock failed image download
-    mockStorage.from().download.mockResolvedValue({
+    mockStorage.from().download.mockResolvedValueOnce({
       data: null,
       error: { message: 'Image not found', code: 'NOT_FOUND' }
     });
@@ -134,7 +139,7 @@ describe('Thumbnail Service', () => {
     // Assert
     expect(result.error).toEqual({
       message: 'Failed to download original image: Image not found',
-      code: 'DOWNLOAD_ERROR'
+      code: ThumbnailErrorCode.DOWNLOAD_ERROR
     });
     expect(result.data).toBeNull();
 
@@ -149,9 +154,18 @@ describe('Thumbnail Service', () => {
     const originalPath = 'images/corrupt-image.jpg';
 
     // Mock successful download but corrupt image
-    mockStorage.from().download.mockResolvedValue({
-      data: Buffer.from('corrupt-data'),
+    const mockBlob = new Blob(['corrupt-data'], { type: 'image/jpeg' });
+    mockBlob.arrayBuffer = () => Promise.resolve(new ArrayBuffer(10));
+
+    mockStorage.from().download.mockResolvedValueOnce({
+      data: mockBlob,
       error: null
+    });
+
+    // Mock Sharp processing error by overriding the mock implementation
+    const sharp = await import('sharp');
+    vi.mocked(sharp.default).mockImplementationOnce(() => {
+      throw new Error('Invalid image data');
     });
 
     // Act
@@ -160,7 +174,7 @@ describe('Thumbnail Service', () => {
     // Assert
     expect(result.error).toEqual({
       message: 'Failed to process image',
-      code: 'PROCESSING_ERROR'
+      code: ThumbnailErrorCode.PROCESSING_ERROR
     });
     expect(result.data).toBeNull();
 
@@ -175,19 +189,22 @@ describe('Thumbnail Service', () => {
     const originalPath = 'images/wide-image.jpg';
 
     // Mock successful image download
-    mockStorage.from().download.mockResolvedValue({
-      data: Buffer.from('fake-wide-image-data'),
+    const mockBlob = new Blob(['fake-wide-image-data'], { type: 'image/jpeg' });
+    mockBlob.arrayBuffer = () => Promise.resolve(new ArrayBuffer(10));
+
+    mockStorage.from().download.mockResolvedValueOnce({
+      data: mockBlob,
       error: null
     });
 
     // Mock successful upload
-    mockStorage.from().upload.mockResolvedValue({
+    mockStorage.from().upload.mockResolvedValueOnce({
       data: { path: 'thumbnails/wide-image.webp' },
       error: null
     });
 
     // Mock database update
-    mockDatabase.from().update().eq.mockResolvedValue({
+    mockDatabase.from().update().eq.mockResolvedValueOnce({
       data: { id: imageId, thumbnail_path: 'thumbnails/wide-image.webp' },
       error: null
     });

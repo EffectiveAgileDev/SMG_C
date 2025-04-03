@@ -1,22 +1,12 @@
-import { vi, afterEach, afterAll } from 'vitest';
+import '@testing-library/jest-dom';
+import { expect, afterEach } from 'vitest';
+import { cleanup } from '@testing-library/react';
+import matchers from '@testing-library/jest-dom/matchers';
 
-// Mock Vite's import.meta.env
-vi.stubGlobal('import.meta', {
-  env: {
-    VITE_SUPABASE_URL: 'https://example.supabase.co',
-    VITE_SUPABASE_ANON_KEY: 'example-anon-key',
-    MODE: 'test',
-    DEV: true,
-  }
-});
+// Extend Vitest's expect method with methods from react-testing-library
+expect.extend(matchers);
 
-// Clean up after each test
+// Cleanup after each test case (e.g., clearing jsdom)
 afterEach(() => {
-  vi.clearAllMocks();
-  vi.resetModules();
-});
-
-// Clean up after all tests
-afterAll(() => {
-  vi.unstubAllGlobals();
+  cleanup();
 }); 
