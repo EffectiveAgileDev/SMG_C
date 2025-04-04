@@ -1,11 +1,11 @@
 <#
 .SYNOPSIS
-    Verification script for uninstallation of SMG_C application.
+    Verification script for uninstallation of Promptly Social application.
 .DESCRIPTION
-    This PowerShell script verifies that the SMG_C application has been correctly
+    This PowerShell script verifies that the Promptly Social application has been correctly
     uninstalled by checking that files, registry entries, and shortcuts have been removed.
 .NOTES
-    Author: SMG_C Development Team
+    Author: Promptly Social Development Team
     Version: 1.0
     Date: April 12, 2024
 #>
@@ -17,7 +17,8 @@ $SUCCESS = 0
 $FAILURE = 1
 
 # Configuration
-$AppName = "smg_c"
+$AppName = "PromptlySocial"
+$AppDisplayName = "Promptly Social"
 $ManufacturerName = "Effective Agile Development"
 
 # Expected installation paths
@@ -64,7 +65,7 @@ function Test-Condition {
 
 # Display header
 Write-Host "==============================================" -ForegroundColor Cyan
-Write-Host "  SMG_C Windows Uninstallation Verification" -ForegroundColor Cyan
+Write-Host "  $AppDisplayName Windows Uninstallation Verification" -ForegroundColor Cyan
 Write-Host "==============================================" -ForegroundColor Cyan
 Write-Host
 
@@ -74,8 +75,8 @@ Test-Condition -Condition (-not (Test-Path -Path $AppInstallPath)) -Description 
 
 # 2. Check if shortcuts have been removed
 Write-Host "Checking shortcuts removal..." -ForegroundColor Yellow
-$DesktopShortcut = Join-Path -Path $DesktopPath -ChildPath "$AppName.lnk"
-$StartMenuShortcut = Join-Path -Path $StartMenuPath -ChildPath "$AppName.lnk"
+$DesktopShortcut = Join-Path -Path $DesktopPath -ChildPath "$AppDisplayName.lnk"
+$StartMenuShortcut = Join-Path -Path $StartMenuPath -ChildPath "$AppDisplayName.lnk"
 Test-Condition -Condition (-not (Test-Path -Path $DesktopShortcut)) -Description "Desktop shortcut has been removed"
 Test-Condition -Condition (-not (Test-Path -Path $StartMenuPath)) -Description "Start Menu folder has been removed"
 

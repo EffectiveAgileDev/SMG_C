@@ -1,11 +1,11 @@
 <#
 .SYNOPSIS
-    Build script for SMG_C Windows installation packages.
+    Build script for Promptly Social Windows installation packages.
 .DESCRIPTION
     This PowerShell script builds Windows MSI and EXE installer packages
-    for the SMG_C application using Tauri's build system.
+    for the Promptly Social application using Tauri's build system.
 .NOTES
-    Author: SMG_C Development Team
+    Author: Promptly Social Development Team
     Version: 1.0
     Date: April 12, 2024
 #>
@@ -13,7 +13,8 @@
 #Requires -Version 5.1
 
 # Configuration
-$AppName = "smg_c"
+$AppName = "PromptlySocial"
+$AppDisplayName = "Promptly Social"
 $AppVersion = "0.1.0"
 $BuildMode = "release" # Options: debug, release
 $BuildMSI = $true
@@ -36,7 +37,7 @@ $ErrorCount = 0
 # Display header
 Clear-Host
 Write-Host "==============================================" -ForegroundColor Cyan
-Write-Host "  SMG_C Windows Installer Build Script" -ForegroundColor Cyan
+Write-Host "  $AppDisplayName Windows Installer Build Script" -ForegroundColor Cyan
 Write-Host "  Version: $AppVersion" -ForegroundColor Cyan
 Write-Host "  Build Mode: $BuildMode" -ForegroundColor Cyan
 Write-Host "==============================================" -ForegroundColor Cyan

@@ -1,9 +1,9 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Social Media Generator - Claude",
+  "productName": "Promptly Social",
   "version": "0.1.0",
-  "identifier": "com.smg_c.app",
-  "description": "Social Media Generator using Claude PRD - A cross-platform desktop application for generating and managing social media content",
+  "identifier": "com.promptlysocial.app",
+  "description": "Promptly Social - A cross-platform desktop application for generating and managing social media content",
   "publisher": "Effective Agile Development LLC",
   "copyright": "© 2024 Effective Agile Development. All rights reserved.",
   "build": {
@@ -15,7 +15,7 @@
   "app": {
     "windows": [
       {
-        "title": "Social Media Generator",
+        "title": "Promptly Social",
         "width": 1200,
         "height": 800,
         "minWidth": 800,
@@ -69,7 +69,7 @@
         "installMode": "currentUser",
         "displayLanguageSelector": false,
         "languages": ["English"],
-        "shortcutName": "SMG-C",
+        "shortcutName": "Promptly Social",
         "shortcutStartMenuDir": "Effective Agile Development",
         "displayRunAfterFinish": true
       }

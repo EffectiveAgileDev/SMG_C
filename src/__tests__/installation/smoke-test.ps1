@@ -1,11 +1,11 @@
 <#
 .SYNOPSIS
-    Smoke test script for SMG_C application after Windows installation.
+    Smoke test script for Promptly Social application after Windows installation.
 .DESCRIPTION
-    This PowerShell script performs basic functional verification of the SMG_C
+    This PowerShell script performs basic functional verification of the Promptly Social
     application after installation to ensure core features are working properly.
 .NOTES
-    Author: SMG_C Development Team
+    Author: Promptly Social Development Team
     Version: 1.0
     Date: April 12, 2024
 #>
@@ -17,7 +17,8 @@ $SUCCESS = 0
 $FAILURE = 1
 
 # Configuration
-$AppName = "smg_c"
+$AppName = "PromptlySocial"
+$AppDisplayName = "Promptly Social"
 $ManufacturerName = "Effective Agile Development"
 $ExpectedVersion = "0.1.0"
 
@@ -67,7 +68,7 @@ function Test-Feature {
 
 # Display header
 Write-Host "==============================================" -ForegroundColor Cyan
-Write-Host "  SMG_C Windows Application Smoke Test" -ForegroundColor Cyan
+Write-Host "  $AppDisplayName Windows Application Smoke Test" -ForegroundColor Cyan
 Write-Host "  Version: $ExpectedVersion" -ForegroundColor Cyan
 Write-Host "==============================================" -ForegroundColor Cyan
 Write-Host

@@ -5,7 +5,7 @@
     This PowerShell script runs the build process for Windows installation packages
     and handles errors and logging.
 .NOTES
-    Author: SMG_C Development Team
+    Author: Promptly Social Development Team
     Version: 1.0
     Date: April 12, 2024
 #>
@@ -32,7 +32,7 @@ Start-Transcript -Path $TranscriptPath -Force
 
 try {
     Write-Host "==============================================" -ForegroundColor Cyan
-    Write-Host "  SMG_C Windows Build Process" -ForegroundColor Cyan
+    Write-Host "  Promptly Social Windows Build Process" -ForegroundColor Cyan
     Write-Host "  Started at: $StartTime" -ForegroundColor Cyan
     Write-Host "==============================================" -ForegroundColor Cyan
     Write-Host

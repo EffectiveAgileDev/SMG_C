@@ -1,12 +1,12 @@
 <#
 .SYNOPSIS
-    Verification script for Windows installation of SMG_C application.
+    Verification script for Windows installation of Promptly Social application.
 .DESCRIPTION
-    This PowerShell script verifies that the SMG_C application has been correctly
+    This PowerShell script verifies that the Promptly Social application has been correctly
     installed on a Windows system by checking file existence, registry entries,
     shortcut creation, and other installation artifacts.
 .NOTES
-    Author: SMG_C Development Team
+    Author: Promptly Social Development Team
     Version: 1.0
     Date: April 12, 2024
 #>
@@ -18,7 +18,8 @@ $SUCCESS = 0
 $FAILURE = 1
 
 # Configuration
-$AppName = "smg_c"
+$AppName = "PromptlySocial"
+$AppDisplayName = "Promptly Social"
 $ManufacturerName = "Effective Agile Development"
 $ExpectedVersion = "0.1.0"
 
@@ -66,7 +67,7 @@ function Test-Condition {
 
 # Display header
 Write-Host "==============================================" -ForegroundColor Cyan
-Write-Host "  SMG_C Windows Installation Verification" -ForegroundColor Cyan
+Write-Host "  $AppDisplayName Windows Installation Verification" -ForegroundColor Cyan
 Write-Host "  Version: $ExpectedVersion" -ForegroundColor Cyan
 Write-Host "==============================================" -ForegroundColor Cyan
 Write-Host
@@ -81,8 +82,8 @@ if (Test-Path -Path $AppInstallPath) {
 
 # 2. Check shortcuts
 Write-Host "Checking shortcuts..." -ForegroundColor Yellow
-$DesktopShortcut = Join-Path -Path $DesktopPath -ChildPath "$AppName.lnk"
-$StartMenuShortcut = Join-Path -Path $StartMenuPath -ChildPath "$AppName.lnk"
+$DesktopShortcut = Join-Path -Path $DesktopPath -ChildPath "$AppDisplayName.lnk"
+$StartMenuShortcut = Join-Path -Path $StartMenuPath -ChildPath "$AppDisplayName.lnk"
 Test-Condition -Condition (Test-Path -Path $DesktopShortcut) -Description "Desktop shortcut exists"
 Test-Condition -Condition (Test-Path -Path $StartMenuShortcut) -Description "Start Menu shortcut exists"
 
@@ -96,7 +97,7 @@ if (Test-Path -Path $AppRegPath) {
     $Publisher = (Get-ItemProperty -Path $AppRegPath -Name "Publisher" -ErrorAction SilentlyContinue).Publisher
     $UninstallString = (Get-ItemProperty -Path $AppRegPath -Name "UninstallString" -ErrorAction SilentlyContinue).UninstallString
     
-    Test-Condition -Condition ($DisplayName -like "*$AppName*") -Description "Display name is correct" -FailMessage "Found: $DisplayName"
+    Test-Condition -Condition ($DisplayName -like "*$AppDisplayName*") -Description "Display name is correct" -FailMessage "Found: $DisplayName"
     Test-Condition -Condition ($DisplayVersion -eq $ExpectedVersion) -Description "Version is correct" -FailMessage "Found: $DisplayVersion, Expected: $ExpectedVersion"
     Test-Condition -Condition ($Publisher -like "*$ManufacturerName*") -Description "Publisher is correct" -FailMessage "Found: $Publisher, Expected: $ManufacturerName"
     Test-Condition -Condition ($null -ne $UninstallString) -Description "Uninstall string exists"
