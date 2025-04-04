@@ -1,0 +1,133 @@
+{
+  "$schema": "https://github.com/tauri-apps/tauri/blob/dev/tooling/cli/schema.json",
+  "identifier": "default-capability",
+  "description": "Default capabilities for Promptly Social",
+  "windows": ["main"],
+  "permissions": [
+    "path:default",
+    "event:default",
+    "window:default",
+    "app:default",
+    "resources:default",
+    "menu:default",
+    "tray:default",
+    {
+      "identifier": "fs:default",
+      "allow": [
+        {
+          "path": "$APPDATA/**",
+          "operation": {
+            "read": true,
+            "write": true,
+            "create": true,
+            "stat": true
+          }
+        },
+        {
+          "path": "$DESKTOP/**",
+          "operation": {
+            "read": true,
+            "write": true,
+            "create": true,
+            "stat": true
+          }
+        },
+        {
+          "path": "$DOCUMENT/**",
+          "operation": {
+            "read": true,
+            "write": true,
+            "create": true,
+            "stat": true
+          }
+        },
+        {
+          "path": "$DOWNLOAD/**",
+          "operation": {
+            "read": true,
+            "write": true,
+            "create": true,
+            "stat": true
+          }
+        },
+        {
+          "path": "$PICTURE/**",
+          "operation": {
+            "read": true,
+            "stat": true
+          }
+        },
+        {
+          "path": "$TEMP/**",
+          "operation": {
+            "read": true,
+            "write": true,
+            "create": true,
+            "stat": true
+          }
+        }
+      ]
+    },
+    {
+      "identifier": "http:default",
+      "allow": [
+        {
+          "url": "https://**",
+          "operation": {
+            "request": true
+          }
+        },
+        {
+          "url": "http://localhost:*/**",
+          "operation": {
+            "request": true
+          }
+        }
+      ]
+    },
+    {
+      "identifier": "dialog:default",
+      "allow": {
+        "open": true,
+        "save": true,
+        "message": true,
+        "confirm": true,
+        "askDirectory": true
+      }
+    },
+    {
+      "identifier": "notification:default",
+      "allow": {
+        "show": true
+      }
+    },
+    {
+      "identifier": "shell:default",
+      "allow": {
+        "open": true,
+        "scope": [
+          {
+            "url": "https://**",
+            "validation": "strict"
+          },
+          {
+            "name": "browser",
+            "cmd": "default",
+            "args": {
+              "validate": true,
+              "acceptExtraArgs": false
+            },
+            "validation": "strict"
+          }
+        ]
+      }
+    },
+    {
+      "identifier": "clipboard:default",
+      "allow": {
+        "writeText": true,
+        "readText": true
+      }
+    }
+  ]
+} 

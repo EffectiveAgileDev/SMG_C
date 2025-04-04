@@ -269,18 +269,18 @@ src/components/apiKeys/
 Build, package, and test the application installer for Windows 10/11 platforms to ensure smooth deployment and user experience
 
 ### Tasks
-- [ ] Configure Tauri for Windows build
+- [x] Configure Tauri for Windows build
   - [x] Set up Windows-specific configuration in tauri.conf.json
     - [x] Update productName, version, and identifier
     - [x] Configure Windows MSI metadata (manufacturer, languages, etc.)
-    - [ ] Set up WebView2 installation options
+    - [x] Set up WebView2 installation options
   - [x] Configure application icons and branding for Windows
     - [x] Create Windows-specific .ico files in multiple sizes
     - [x] Update icon paths in tauri.conf.json
-  - [ ] Set up proper Windows permissions in manifest
-    - [ ] Configure capabilities in default.json for Windows
-    - [ ] Add necessary file system permissions
-    - [ ] Configure network access permissions
+  - [x] Set up proper Windows permissions in manifest
+    - [x] Configure capabilities in default.json for Windows
+    - [x] Add necessary file system permissions
+    - [x] Configure network access permissions
   - [x] Configure installer options and customizations
     - [x] Set up NSIS configuration for EXE installer
     - [x] Configure MSI installation dialogs

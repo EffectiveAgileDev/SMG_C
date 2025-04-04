@@ -28,6 +28,13 @@
     ],
     "security": {
       "csp": null
+    },
+    "withGlobalTauri": true,
+    "trayIcon": {
+      "iconPath": "icons/32x32.png",
+      "iconAsTemplate": true,
+      "menuOnLeftClick": false,
+      "tooltip": "Promptly Social"
     }
   },
   "bundle": {
@@ -47,6 +54,10 @@
       "certificateThumbprint": null,
       "digestAlgorithm": "sha256",
       "timestampUrl": "",
+      "webviewInstallMode": {
+        "type": "downloadBootstrapper",
+        "silent": true
+      },
       "wix": {
         "language": ["en-US"],
         "template": null,
@@ -57,7 +68,8 @@
         "dialogImagePath": null,
         "enableElevatedUpdateTask": false,
         "installModes": ["currentUser", "perMachine"],
-        "shortcutPromptFolder": true
+        "shortcutPromptFolder": true,
+        "upgradeCode": "{39F1D404-3A6F-4C15-A88C-9F42C4A24FAE}"
       },
       "nsis": {
         "template": null,
