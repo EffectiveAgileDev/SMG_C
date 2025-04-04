@@ -265,9 +265,9 @@ Build, package, and test the application installer for Windows 10/11 platforms t
 
 ### Tasks
 - [ ] Configure Tauri for Windows build
-  - [ ] Set up Windows-specific configuration in tauri.conf.json
-    - [ ] Update productName, version, and identifier
-    - [ ] Configure Windows MSI metadata (manufacturer, languages, etc.)
+  - [x] Set up Windows-specific configuration in tauri.conf.json
+    - [x] Update productName, version, and identifier
+    - [x] Configure Windows MSI metadata (manufacturer, languages, etc.)
     - [ ] Set up WebView2 installation options
   - [ ] Configure application icons and branding for Windows
     - [ ] Create Windows-specific .ico files in multiple sizes
@@ -276,9 +276,9 @@ Build, package, and test the application installer for Windows 10/11 platforms t
     - [ ] Configure capabilities in default.json for Windows
     - [ ] Add necessary file system permissions
     - [ ] Configure network access permissions
-  - [ ] Configure installer options and customizations
-    - [ ] Set up NSIS configuration for EXE installer
-    - [ ] Configure MSI installation dialogs
+  - [x] Configure installer options and customizations
+    - [x] Set up NSIS configuration for EXE installer
+    - [x] Configure MSI installation dialogs
     - [ ] Set up proper installation directory structure
   
 - [ ] Build Windows Installation Package
@@ -342,14 +342,14 @@ Build, package, and test the application installer for Windows 10/11 platforms t
     - [ ] Test user data preservation
     - [ ] Verify configuration settings persistence
     - [ ] Test database connections after update
-  - [ ] Test uninstallation process
-    - [ ] Verify clean uninstallation
-    - [ ] Test uninstallation from control panel
-    - [ ] Test command-line uninstallation
-  - [ ] Verify complete removal of application files
-    - [ ] Check for leftover files after uninstall
-    - [ ] Verify registry cleanup
-    - [ ] Test with uninstall tracking tools
+  - [x] Test uninstallation process
+    - [x] Verify clean uninstallation
+    - [x] Test uninstallation from control panel
+    - [x] Test command-line uninstallation
+  - [x] Verify complete removal of application files
+    - [x] Check for leftover files after uninstall
+    - [x] Verify registry cleanup
+    - [x] Test with uninstall tracking tools
   - [ ] Test clean reinstallation after uninstall
     - [ ] Verify fresh installation works after uninstall
     - [ ] Test reinstallation with different options
@@ -451,7 +451,7 @@ Build, package, and test the application installer for Windows 10/11 platforms t
 - [ ] Production-ready Windows MSI installer
   - [ ] Properly signed MSI package
   - [ ] Installation verification script
-  - [ ] Silent installation options documented
+  - [x] Silent installation options documented
 - [ ] Alternative Windows EXE installer
   - [ ] NSIS-based installer with customizations
   - [ ] Banner and UI customizations
@@ -460,10 +460,10 @@ Build, package, and test the application installer for Windows 10/11 platforms t
   - [ ] PDF documentation package
   - [ ] Online installation guide
   - [ ] Video tutorial for installation
-- [ ] Automated testing scripts for installation verification
-  - [ ] PowerShell verification scripts
-  - [ ] Installation test harness
-  - [ ] Automated smoke tests
+- [x] Automated testing scripts for installation verification
+  - [x] PowerShell verification scripts
+  - [x] Installation test harness
+  - [x] Automated smoke tests
 - [ ] Performance benchmark report
   - [ ] Startup time comparisons
   - [ ] Memory usage analysis
@@ -474,6 +474,9 @@ Build, package, and test the application installer for Windows 10/11 platforms t
   - [ ] Migration guide for existing users
 
 ## Notes
+- [x] Application name changed from "SMG_C" to "Promptly Social" in all configuration files and scripts
+- [x] Verification scripts updated with new application name
+- [x] Build scripts configured for both MSI and NSIS installers
 - [ ] Consider implementing auto-update functionality using Tauri updater plugin
 - [ ] Plan for telemetry to track installation success rates and error reporting
 - [ ] Research Windows Store distribution options and requirements
