@@ -247,6 +247,11 @@ Set up Supabase integration for social media content storage and management
 - [ ] Plan for key rotation notifications
 - [ ] Consider adding audit logging for key operations
 - [x] OAuth token table implementation completed with all test cases passing
+- [x] Application name changed from "SMG_C" to "Promptly Social" in all configuration files and scripts
+- [x] Verification scripts updated with new application name
+- [x] Build scripts configured for both MSI and NSIS installers
+- [x] Created placeholder icons for Windows installer
+- [x] Updated package.json and Cargo.toml with new application name
 
 See PLANNING-P.md for detailed technical documentation and architecture 
 
@@ -269,9 +274,9 @@ Build, package, and test the application installer for Windows 10/11 platforms t
     - [x] Update productName, version, and identifier
     - [x] Configure Windows MSI metadata (manufacturer, languages, etc.)
     - [ ] Set up WebView2 installation options
-  - [ ] Configure application icons and branding for Windows
-    - [ ] Create Windows-specific .ico files in multiple sizes
-    - [ ] Update icon paths in tauri.conf.json
+  - [x] Configure application icons and branding for Windows
+    - [x] Create Windows-specific .ico files in multiple sizes
+    - [x] Update icon paths in tauri.conf.json
   - [ ] Set up proper Windows permissions in manifest
     - [ ] Configure capabilities in default.json for Windows
     - [ ] Add necessary file system permissions
@@ -477,6 +482,8 @@ Build, package, and test the application installer for Windows 10/11 platforms t
 - [x] Application name changed from "SMG_C" to "Promptly Social" in all configuration files and scripts
 - [x] Verification scripts updated with new application name
 - [x] Build scripts configured for both MSI and NSIS installers
+- [x] Created placeholder icons for Windows installer
+- [x] Updated package.json and Cargo.toml with new application name
 - [ ] Consider implementing auto-update functionality using Tauri updater plugin
 - [ ] Plan for telemetry to track installation success rates and error reporting
 - [ ] Research Windows Store distribution options and requirements

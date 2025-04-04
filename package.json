@@ -1,8 +1,8 @@
 {
-  "name": "smg_c",
+  "name": "promptly-social",
   "private": true,
   "version": "0.1.0",
-  "description": "Social Media Generator using Claude PRD - A cross-platform desktop application for generating and managing social media content",
+  "description": "Promptly Social - A cross-platform desktop application for generating and managing social media content",
   "type": "module",
   "scripts": {
     "dev": "vite",
