@@ -67,7 +67,7 @@ describe('UI Components', () => {
             />
           );
       
-          expect(screen.getByTestId('image-card')).toHaveClass('selected');
+          expect(screen.getByTestId('image-card')).toHaveClass('border-2', 'border-primary');
         });
       });
 

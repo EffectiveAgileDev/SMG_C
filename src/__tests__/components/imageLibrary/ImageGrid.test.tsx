@@ -1,6 +1,6 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { vi } from 'vitest';
 import { ImageGrid } from '../../../components/imageLibrary/ImageGrid';
 import { mockImages } from '../../fixtures/imageLibrary';
 import { StoredImage } from '../../../lib/types/imageLibrary';
@@ -38,8 +38,28 @@ describe('ImageGrid', () => {
 
   it('sorts images by name when selected', async () => {
     const images = [
-      { id: '1', name: 'Zebra', path: 'url1', created_at: new Date().toISOString() },
-      { id: '2', name: 'Ant', path: 'url2', created_at: new Date().toISOString() }
+      { 
+        id: '1', 
+        name: 'Zebra', 
+        path: 'url1', 
+        created_at: new Date().toISOString(),
+        size: 1024,
+        format: 'image/jpeg',
+        width: 800,
+        height: 600,
+        updated_at: new Date().toISOString()
+      },
+      { 
+        id: '2', 
+        name: 'Ant', 
+        path: 'url2', 
+        created_at: new Date().toISOString(),
+        size: 1024,
+        format: 'image/jpeg',
+        width: 800,
+        height: 600,
+        updated_at: new Date().toISOString()
+      }
     ] as StoredImage[];
 
     render(
@@ -58,14 +78,16 @@ describe('ImageGrid', () => {
 
     // Wait for the content to be rendered in the portal and click the "Name" option
     await waitFor(async () => {
-      const nameOption = screen.getByRole('option', { name: /name/i });
+      const nameOption = screen.getByRole('option', { name: 'Name' });
       await userEvent.click(nameOption);
     });
 
-    // Get all image cards and verify they are sorted by name
-    const imageCards = screen.getAllByTestId('image-card');
-    expect(imageCards[0]).toHaveTextContent('Ant');
-    expect(imageCards[1]).toHaveTextContent('Zebra');
+    // Wait for the sort to take effect and verify the order
+    await waitFor(() => {
+      const imageCards = screen.getAllByTestId('image-card');
+      expect(imageCards[0].querySelector('.font-medium')).toHaveTextContent('Ant');
+      expect(imageCards[1].querySelector('.font-medium')).toHaveTextContent('Zebra');
+    }, { timeout: 1000 });
   });
 
   it('handles image selection', async () => {

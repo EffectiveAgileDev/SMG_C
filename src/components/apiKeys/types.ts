@@ -1,7 +1,12 @@
 import type { APIKey as BaseAPIKey, PlatformType } from '../../lib/apiKeys/types';
 
 export interface APIKey extends BaseAPIKey {
+  id: string;
+  keyName: string;
+  platformType: 'twitter' | 'linkedin' | 'openai';
+  isActive: boolean;
   createdAt: string;
+  encryptedKey: string;
   lastUsed?: string;
 }
 

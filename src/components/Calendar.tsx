@@ -121,30 +121,14 @@ export default function Calendar({ initialPosts = [], initialDate = new Date(202
   };
 
   const getPostsForSlot = (date: Date, hour: number) => {
-    // Create a slot time string in ISO format
-    const slotTime = new Date(
-      Date.UTC(
-        date.getFullYear(),
-        date.getMonth(),
-        date.getDate(),
-        hour,
-        0,
-        0,
-        0
-      )
-    ).toISOString();
-
     return posts.filter(post => {
-      // Get the post time in ISO format
-      const postTime = new Date(post.scheduled_for).toISOString();
-
-      console.log('Comparing slots:', {
-        slotTime,
-        postTime,
-        match: slotTime === postTime
-      });
-
-      return slotTime === postTime;
+      const postDate = new Date(post.scheduled_for);
+      return (
+        postDate.getUTCDate() === date.getDate() &&
+        postDate.getUTCMonth() === date.getMonth() &&
+        postDate.getUTCFullYear() === date.getFullYear() &&
+        postDate.getUTCHours() === hour
+      );
     });
   };
 

@@ -24,11 +24,13 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({ images, onDeleteImag
 
     // Apply sort
     result.sort((a, b) => {
+      console.log('Sorting with option:', sortBy);
+      console.log('Comparing dates:', a.created_at, b.created_at);
       switch (sortBy) {
         case 'name_asc':
-          return a.name.localeCompare(b.name);
+          return a.name.toLowerCase().localeCompare(b.name.toLowerCase());
         case 'name_desc':
-          return b.name.localeCompare(a.name);
+          return b.name.toLowerCase().localeCompare(a.name.toLowerCase());
         case 'date_asc':
           return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
         case 'date_desc':
@@ -77,9 +79,15 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({ images, onDeleteImag
         <Select
           value={sortBy}
           onValueChange={(value: SortOption) => setSortBy(value)}
+          data-testid="sort-select"
         >
-          <SelectTrigger aria-label="Sort by">
-            <SelectValue placeholder="Sort by" />
+          <SelectTrigger aria-label="Sort by" className="w-[180px]">
+            <SelectValue>
+              {sortBy === 'name_asc' && 'Name (A-Z)'}
+              {sortBy === 'name_desc' && 'Name (Z-A)'}
+              {sortBy === 'date_asc' && 'Date (Oldest first)'}
+              {sortBy === 'date_desc' && 'Date (Newest first)'}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="name_asc">Name (A-Z)</SelectItem>
@@ -101,7 +109,7 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({ images, onDeleteImag
         )}
       </div>
       
-      <div
+      <div 
         className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
         data-testid="image-gallery-grid"
       >

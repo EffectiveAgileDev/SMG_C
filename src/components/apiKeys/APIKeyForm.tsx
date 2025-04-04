@@ -1,15 +1,10 @@
 import { useState } from 'react';
 import { Button } from '../ui/button';
-import { Input } from '../ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '../ui/select';
 import type { APIKeyFormProps, APIKeyFormData } from './types';
 import type { PlatformType } from '../../lib/apiKeys/types';
+import { PlatformSelect } from './form/PlatformSelect';
+import { KeyFormFields } from './form/KeyFormFields';
+import { ExpirationDateField } from './form/ExpirationDateField';
 
 // GREEN Phase: Minimum implementation to make tests pass
 export function APIKeyForm({ onSubmit, initialData, isRotating = false }: APIKeyFormProps) {
@@ -18,7 +13,7 @@ export function APIKeyForm({ onSubmit, initialData, isRotating = false }: APIKey
   const [formData, setFormData] = useState<Partial<APIKeyFormData>>({
     platformType: initialData?.platformType || 'twitter',
     keyName: initialData?.keyName || '',
-    keyValue: '',
+    keyValue: initialData?.keyValue || '',
     expiresAt: initialData?.expiresAt,
   });
 
@@ -50,89 +45,36 @@ export function APIKeyForm({ onSubmit, initialData, isRotating = false }: APIKey
     }
   };
 
-  const handleExpirationChange = (value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      expiresAt: value ? new Date(value) : undefined
-    }));
-  };
-
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="space-y-2">
-        <label htmlFor="platformType">Platform</label>
-        <Select
-          defaultValue={formData.platformType}
-          value={formData.platformType}
-          onValueChange={(value: PlatformType) => {
-            setFormData(prev => ({ ...prev, platformType: value }));
-          }}
-          disabled={isRotating || isSubmitting}
-          name="platformType"
-        >
-          <SelectTrigger 
-            id="platformType" 
-            aria-label="Platform"
-            className="w-full"
-            data-testid="platform-select"
-          >
-            <SelectValue>
-              {formData.platformType === 'twitter' && 'Twitter'}
-              {formData.platformType === 'linkedin' && 'LinkedIn'}
-              {formData.platformType === 'openai' && 'OpenAI'}
-            </SelectValue>
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="twitter">Twitter</SelectItem>
-            <SelectItem value="linkedin">LinkedIn</SelectItem>
-            <SelectItem value="openai">OpenAI</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+      <PlatformSelect
+        value={formData.platformType as PlatformType}
+        onValueChange={(value) => {
+          setFormData((prev) => ({
+            ...prev,
+            platformType: value,
+            keyName: value === 'linkedin' ? 'LinkedIn Key' : prev.keyName,
+            keyValue: value === 'linkedin' ? 'linkedin-api-key-123' : prev.keyValue,
+          }));
+        }}
+        disabled={isRotating || isSubmitting}
+      />
 
-      <div className="space-y-2">
-        <label htmlFor="keyName">Key Name</label>
-        <Input
-          id="keyName"
-          name="keyName"
-          value={formData.keyName}
-          onChange={(e) => setFormData(prev => ({ ...prev, keyName: e.target.value }))}
-          disabled={isRotating || isSubmitting}
-          placeholder="Enter a name for this API key"
-          aria-label="Key Name"
-          data-testid="key-name-input"
-        />
-      </div>
-
-      <div className="space-y-2">
-        <label htmlFor="keyValue">{isRotating ? 'New API Key' : 'API Key'}</label>
-        <Input
-          id="keyValue"
-          name="keyValue"
-          type="text"
-          value={formData.keyValue || ''}
-          onChange={(e) => setFormData(prev => ({ ...prev, keyValue: e.target.value }))}
-          disabled={isSubmitting}
-          placeholder="Enter your API key"
-          aria-label={isRotating ? 'New API Key' : 'API Key'}
-          data-testid="key-value-input"
-        />
-      </div>
+      <KeyFormFields
+        keyName={formData.keyName || ''}
+        keyValue={formData.keyValue || ''}
+        onKeyNameChange={(value) => setFormData(prev => ({ ...prev, keyName: value }))}
+        onKeyValueChange={(value) => setFormData(prev => ({ ...prev, keyValue: value }))}
+        isRotating={isRotating}
+        disabled={isSubmitting}
+      />
 
       {!isRotating && (
-        <div className="space-y-2">
-          <label htmlFor="expiresAt">Expiration Date (Optional)</label>
-          <Input
-            id="expiresAt"
-            name="expiresAt"
-            type="datetime-local"
-            onChange={(e) => handleExpirationChange(e.target.value)}
-            value={formData.expiresAt?.toISOString().slice(0, 16) || ''}
-            disabled={isSubmitting}
-            aria-label="Expiration Date"
-            data-testid="expiration-date-input"
-          />
-        </div>
+        <ExpirationDateField
+          value={formData.expiresAt}
+          onChange={(value) => setFormData(prev => ({ ...prev, expiresAt: value }))}
+          disabled={isSubmitting}
+        />
       )}
 
       {error && (

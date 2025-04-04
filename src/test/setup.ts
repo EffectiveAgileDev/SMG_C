@@ -1,19 +1,15 @@
-import '@testing-library/jest-dom/vitest';
 import { vi, afterEach } from 'vitest';
-import { cleanup } from '@testing-library/react';
+import '@testing-library/jest-dom';
 
-// Mock Vite's import.meta.env
+// Mock environment variables
 vi.stubGlobal('import.meta', {
   env: {
-    VITE_SUPABASE_URL: 'https://example.supabase.co',
-    VITE_SUPABASE_ANON_KEY: 'example-anon-key',
-    MODE: 'test',
-    DEV: true,
-  }
+    VITE_SUPABASE_URL: 'http://localhost:54321',
+    VITE_SUPABASE_ANON_KEY: 'test-key',
+  },
 });
 
 // Clean up after each test
 afterEach(() => {
-  cleanup();
   vi.clearAllMocks();
 }); 
