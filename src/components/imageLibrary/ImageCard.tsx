@@ -5,29 +5,26 @@ import type { StoredImage } from '../../lib/types/image';
 import { formatFileSize } from '../../lib/utils';
 import { Button } from '../ui/button';
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "../ui/alert-dialog";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "../ui/dialog";
 
 interface ImageCardProps {
   image: StoredImage;
   selected: boolean;
   onSelect: (id: string) => void;
   onDelete: (id: string) => void;
+  isDeleting?: boolean;
 }
 
-export function ImageCard({ image, selected, onSelect, onDelete }: ImageCardProps) {
+export function ImageCard({ image, selected, onSelect, onDelete, isDeleting = false }: ImageCardProps) {
   const handleSelect = () => {
-    if (!selected) {
-      onSelect(image.id);
-    }
+    onSelect(image.id);
   };
 
   return (
@@ -44,25 +41,33 @@ export function ImageCard({ image, selected, onSelect, onDelete }: ImageCardProp
         className={selected ? 'active' : ''}
         aria-pressed={selected}
       >
-        {selected ? 'Selected' : 'Select'}
+        {selected ? 'Selected' : 'Select Image'}
       </Button>
-      <AlertDialog>
-        <AlertDialogTrigger asChild>
-          <Button variant="destructive" data-variant="destructive">Delete</Button>
-        </AlertDialogTrigger>
-        <AlertDialogContent role="dialog">
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the image.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={() => onDelete(image.id)}>Delete</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <Dialog>
+        <DialogTrigger asChild>
+          <Button variant="destructive" data-variant="destructive">
+            {isDeleting ? 'Deleting...' : 'Delete'}
+          </Button>
+        </DialogTrigger>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Image</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this image? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline">Cancel</Button>
+            <Button 
+              variant="destructive"
+              onClick={() => onDelete(image.id)}
+              disabled={isDeleting}
+            >
+              {isDeleting ? 'Deleting...' : 'Delete'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 } 
