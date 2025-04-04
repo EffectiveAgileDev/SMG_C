@@ -1,21 +1,15 @@
 'use client';
 
 import React from 'react';
-import { StoredImage } from '@/lib/types/image';
+import type { StoredImage, ImageGridProps } from '../../lib/types/imageLibrary';
 import { ImageCard } from './ImageCard';
-
-interface ImageGridProps {
-  images: StoredImage[];
-  onSelect?: (image: StoredImage) => void;
-  onDelete?: (image: StoredImage) => void;
-  selectedImages?: Set<string>;
-}
 
 export function ImageGrid({ 
   images, 
   onSelect, 
   onDelete, 
-  selectedImages = new Set() 
+  selectedImages = new Set(),
+  isDeleting = false
 }: ImageGridProps) {
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
@@ -23,9 +17,10 @@ export function ImageGrid({
         <ImageCard
           key={image.id}
           image={image}
-          onSelect={onSelect}
-          onDelete={onDelete}
           selected={selectedImages.has(image.id)}
+          onSelect={() => onSelect(image.id)}
+          onDelete={() => onDelete(image.id)}
+          isDeleting={isDeleting}
         />
       ))}
     </div>
