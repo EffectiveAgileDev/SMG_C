@@ -3,23 +3,19 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import React from 'react';
 import { ImageCard } from '../../../../components/imageLibrary/ImageCard';
-import type { StoredImage } from '../../../../lib/types/imageLibrary';
+import { createMockImage, mockHandlers } from '../../../fixtures/imageLibrary';
 
 describe('UI Components', () => {
   describe('ImageLibrary', () => {
     describe('ImageCard', () => {
-      // Test data setup
-      const mockImage: StoredImage = {
+      // Test data setup using shared fixture
+      const mockImage = createMockImage({
         id: '1',
         name: 'test-image.jpg',
-        path: '/images/test-image.jpg',
         size: 1024,
-        format: 'image/jpeg',
         width: 800,
-        height: 600,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      };
+        height: 600
+      });
 
       describe('Basic Rendering', () => {
         it('should render image name', () => {
@@ -27,8 +23,8 @@ describe('UI Components', () => {
             <ImageCard
               image={mockImage}
               selected={false}
-              onSelect={() => {}}
-              onDelete={() => {}}
+              onSelect={mockHandlers.onSelect}
+              onDelete={mockHandlers.onDelete}
             />
           );
       
@@ -40,8 +36,8 @@ describe('UI Components', () => {
             <ImageCard
               image={mockImage}
               selected={false}
-              onSelect={() => {}}
-              onDelete={() => {}}
+              onSelect={mockHandlers.onSelect}
+              onDelete={mockHandlers.onDelete}
             />
           );
       
@@ -53,8 +49,8 @@ describe('UI Components', () => {
             <ImageCard
               image={mockImage}
               selected={false}
-              onSelect={() => {}}
-              onDelete={() => {}}
+              onSelect={mockHandlers.onSelect}
+              onDelete={mockHandlers.onDelete}
             />
           );
       
@@ -66,8 +62,8 @@ describe('UI Components', () => {
             <ImageCard
               image={mockImage}
               selected={true}
-              onSelect={() => {}}
-              onDelete={() => {}}
+              onSelect={mockHandlers.onSelect}
+              onDelete={mockHandlers.onDelete}
             />
           );
       
@@ -83,7 +79,7 @@ describe('UI Components', () => {
               image={mockImage}
               selected={false}
               onSelect={handleSelect}
-              onDelete={() => {}}
+              onDelete={mockHandlers.onDelete}
             />
           );
 
@@ -96,8 +92,8 @@ describe('UI Components', () => {
             <ImageCard
               image={mockImage}
               selected={true}
-              onSelect={() => {}}
-              onDelete={() => {}}
+              onSelect={mockHandlers.onSelect}
+              onDelete={mockHandlers.onDelete}
             />
           );
 
@@ -112,7 +108,7 @@ describe('UI Components', () => {
               image={mockImage}
               selected={true}
               onSelect={handleSelect}
-              onDelete={() => {}}
+              onDelete={mockHandlers.onDelete}
             />
           );
 
@@ -128,7 +124,7 @@ describe('UI Components', () => {
             <ImageCard
               image={mockImage}
               selected={false}
-              onSelect={() => {}}
+              onSelect={mockHandlers.onSelect}
               onDelete={handleDelete}
             />
           );
@@ -147,8 +143,8 @@ describe('UI Components', () => {
             <ImageCard
               image={mockImage}
               selected={false}
-              onSelect={() => {}}
-              onDelete={() => {}}
+              onSelect={mockHandlers.onSelect}
+              onDelete={mockHandlers.onDelete}
             />
           );
 
@@ -161,8 +157,8 @@ describe('UI Components', () => {
             <ImageCard
               image={mockImage}
               selected={false}
-              onSelect={() => {}}
-              onDelete={() => {}}
+              onSelect={mockHandlers.onSelect}
+              onDelete={mockHandlers.onDelete}
             />
           );
 
@@ -178,8 +174,8 @@ describe('UI Components', () => {
             <ImageCard
               image={mockImage}
               selected={false}
-              onSelect={() => {}}
-              onDelete={() => {}}
+              onSelect={mockHandlers.onSelect}
+              onDelete={mockHandlers.onDelete}
               isDeleting={true}
             />
           );
@@ -192,8 +188,8 @@ describe('UI Components', () => {
             <ImageCard
               image={mockImage}
               selected={false}
-              onSelect={() => {}}
-              onDelete={() => {}}
+              onSelect={mockHandlers.onSelect}
+              onDelete={mockHandlers.onDelete}
               isDeleting={true}
             />
           );

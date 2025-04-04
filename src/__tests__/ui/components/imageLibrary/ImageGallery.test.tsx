@@ -3,43 +3,17 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import React from 'react';
 import { ImageGallery } from '../../../../components/imageLibrary/ImageGallery';
-import type { StoredImage } from '../../../../lib/types/imageLibrary';
+import { mockImages, mockHandlers } from '../../../fixtures/imageLibrary';
 
 describe('UI Components', () => {
   describe('ImageLibrary', () => {
     describe('ImageGallery', () => {
-      // Test data setup
-      const mockImages: StoredImage[] = [
-        {
-          id: '1',
-          name: 'test-image-1.jpg',
-          path: '/images/test1.jpg',
-          size: 1024,
-          format: 'image/jpeg',
-          width: 800,
-          height: 600,
-          created_at: '2024-04-01T10:00:00Z',
-          updated_at: '2024-04-01T10:00:00Z'
-        },
-        {
-          id: '2',
-          name: 'test-image-2.png',
-          path: '/images/test2.png',
-          size: 2048,
-          format: 'image/png',
-          width: 1024,
-          height: 768,
-          created_at: '2024-04-02T10:00:00Z',
-          updated_at: '2024-04-02T10:00:00Z'
-        }
-      ];
-
       describe('Basic Rendering', () => {
         it('should render grid layout with images', () => {
           render(
             <ImageGallery
               images={mockImages}
-              onDeleteImages={() => {}}
+              onDeleteImages={mockHandlers.onDeleteImages}
             />
           );
 
@@ -51,7 +25,7 @@ describe('UI Components', () => {
           render(
             <ImageGallery
               images={[]}
-              onDeleteImages={() => {}}
+              onDeleteImages={mockHandlers.onDeleteImages}
             />
           );
 
@@ -62,7 +36,7 @@ describe('UI Components', () => {
           render(
             <ImageGallery
               images={mockImages}
-              onDeleteImages={() => {}}
+              onDeleteImages={mockHandlers.onDeleteImages}
             />
           );
 
@@ -73,7 +47,7 @@ describe('UI Components', () => {
           render(
             <ImageGallery
               images={mockImages}
-              onDeleteImages={() => {}}
+              onDeleteImages={mockHandlers.onDeleteImages}
             />
           );
 
@@ -86,7 +60,7 @@ describe('UI Components', () => {
           render(
             <ImageGallery
               images={mockImages}
-              onDeleteImages={() => {}}
+              onDeleteImages={mockHandlers.onDeleteImages}
             />
           );
 
@@ -102,7 +76,7 @@ describe('UI Components', () => {
           render(
             <ImageGallery
               images={mockImages}
-              onDeleteImages={() => {}}
+              onDeleteImages={mockHandlers.onDeleteImages}
             />
           );
 
@@ -124,7 +98,7 @@ describe('UI Components', () => {
           render(
             <ImageGallery
               images={mockImages}
-              onDeleteImages={() => {}}
+              onDeleteImages={mockHandlers.onDeleteImages}
             />
           );
 
@@ -139,7 +113,7 @@ describe('UI Components', () => {
           render(
             <ImageGallery
               images={mockImages}
-              onDeleteImages={() => {}}
+              onDeleteImages={mockHandlers.onDeleteImages}
             />
           );
 
@@ -155,7 +129,7 @@ describe('UI Components', () => {
           render(
             <ImageGallery
               images={mockImages}
-              onDeleteImages={() => {}}
+              onDeleteImages={mockHandlers.onDeleteImages}
             />
           );
 
@@ -170,7 +144,7 @@ describe('UI Components', () => {
           render(
             <ImageGallery
               images={mockImages}
-              onDeleteImages={() => {}}
+              onDeleteImages={mockHandlers.onDeleteImages}
             />
           );
 
@@ -209,7 +183,7 @@ describe('UI Components', () => {
           render(
             <ImageGallery
               images={mockImages}
-              onDeleteImages={() => {}}
+              onDeleteImages={mockHandlers.onDeleteImages}
             />
           );
 
