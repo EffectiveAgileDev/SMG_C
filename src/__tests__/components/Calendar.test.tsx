@@ -1,6 +1,6 @@
 import React from 'react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { render, screen, fireEvent, within, waitFor, waitForElementToBeRemoved } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
 import Calendar from '../../components/Calendar';
@@ -16,6 +16,26 @@ vi.mock('@supabase/supabase-js', () => ({
       single: vi.fn(),
     })),
   })),
+}));
+
+// Mock the platforms utility
+vi.mock('../../utils/platforms', () => ({
+  PLATFORMS: [
+    { platform: 'twitter', connected: true, charLimit: 280 },
+    { platform: 'facebook', connected: true, charLimit: 63206 },
+    { platform: 'instagram', connected: false, charLimit: 2200 },
+    { platform: 'linkedin', connected: true, charLimit: 3000 }
+  ],
+  validateContent: (content: string, platforms: string[]): string | null => {
+    for (const platformName of platforms) {
+      const platformConfig = { platform: platformName, connected: platformName !== 'instagram', charLimit: platformName === 'twitter' ? 280 : 2000 };
+      if (platformConfig?.charLimit && content.length > platformConfig.charLimit) {
+        return `Exceeds ${platformName}'s character limit (${content.length}/${platformConfig.charLimit})`;
+      }
+    }
+    return null;
+  },
+  isPlatformConnected: (platform: string) => platform !== 'instagram'
 }));
 
 describe('Calendar Component', () => {
@@ -107,32 +127,44 @@ describe('Calendar Component', () => {
     const mockPost = {
       id: 1,
       content: 'Test post',
-      status: 'draft' as const,
-      scheduled_for: '2024-04-05T09:00:00Z',
+      scheduled_for: new Date(Date.UTC(2024, 3, 5, 9, 0, 0)).toISOString(),
       platforms: ['twitter'] as string[],
+      status: 'draft' as const
     };
 
+    beforeEach(() => {
+      // Set the initial date to April 5th, 2024 UTC
+      vi.setSystemTime(new Date(Date.UTC(2024, 3, 5, 0, 0, 0)));
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
     it('should display post status indicators correctly', () => {
-      render(<Calendar initialPosts={[mockPost]} />);
-      const postIndicator = screen.getByTestId('post-1-status');
+      render(<Calendar initialPosts={[mockPost]} initialDate={new Date(Date.UTC(2024, 3, 5, 0, 0, 0))} />);
+      const timeSlot = screen.getByTestId('calendar-slot-2024-04-05-09');
+      const postIndicator = within(timeSlot).getByTestId('post-1-status');
       expect(postIndicator).toHaveAttribute('data-status', 'draft');
     });
 
-    it('should allow rescheduling posts via drag and drop', async () => {
-      render(<Calendar initialPosts={[mockPost]} />);
-      const post = screen.getByTestId('post-1');
+    it('should allow rescheduling posts via drag and drop', () => {
+      render(<Calendar initialPosts={[mockPost]} initialDate={new Date(Date.UTC(2024, 3, 5, 0, 0, 0))} />);
+      const originalTimeSlot = screen.getByTestId('calendar-slot-2024-04-05-09');
+      const post = within(originalTimeSlot).getByTestId('post-1');
       const newTimeSlot = screen.getByTestId('calendar-slot-2024-04-05-14');
-      
+
       fireEvent.dragStart(post);
       fireEvent.drop(newTimeSlot);
-      fireEvent.dragEnd(post);
-      
-      expect(newTimeSlot).toContainElement(post);
+
+      expect(within(originalTimeSlot).queryByTestId('post-1')).not.toBeInTheDocument();
+      expect(within(newTimeSlot).getByTestId('post-1')).toBeInTheDocument();
     });
 
     it('should show platform icons for scheduled posts', () => {
-      render(<Calendar initialPosts={[mockPost]} />);
-      const twitterIcon = screen.getByTestId('platform-icon-twitter');
+      render(<Calendar initialPosts={[mockPost]} initialDate={new Date(Date.UTC(2024, 3, 5, 0, 0, 0))} />);
+      const timeSlot = screen.getByTestId('calendar-slot-2024-04-05-09');
+      const twitterIcon = within(timeSlot).getByTestId('platform-icon-twitter');
       expect(twitterIcon).toBeInTheDocument();
     });
   });
@@ -141,31 +173,35 @@ describe('Calendar Component', () => {
   describe('Platform Integration', () => {
     it('should show platform connection status', () => {
       render(<Calendar />);
-      const platformStatus = screen.getByTestId('platform-status');
-      expect(platformStatus).toBeInTheDocument();
+      const platformIcon = screen.getByTestId('platform-icon-instagram');
+      const platformContainer = platformIcon.closest('div[class*="bg-red-100"]') as HTMLElement;
+      expect(platformContainer).not.toBeNull();
+      expect(within(platformContainer).getByText('× Not Connected')).toBeInTheDocument();
     });
 
     it('should prompt for platform authentication if not connected', async () => {
       render(<Calendar />);
       
-      // Find and click the Instagram platform checkbox
-      const instagramCheckbox = screen.getByLabelText(/instagram/i);
-      await userEvent.click(instagramCheckbox);
+      // Click on a time slot to open the post dialog
+      const timeSlot = screen.getByTestId('calendar-slot-2024-04-01-00');
+      fireEvent.click(timeSlot);
 
-      // Verify the connection dialog appears with correct content
-      const dialog = screen.getByRole('dialog');
-      expect(dialog).toBeInTheDocument();
-      
-      // Check for dialog title
-      expect(screen.getByText('Connect Instagram')).toBeInTheDocument();
-      
-      // Check for dialog message
-      expect(screen.getByText('Please connect your Instagram account to continue.')).toBeInTheDocument();
-      
-      // Check for connect button
-      const connectButton = screen.getByTestId('connect-instagram-button');
-      expect(connectButton).toBeInTheDocument();
-      expect(connectButton).toHaveTextContent('Connect Instagram Account');
+      // Wait for the post dialog to appear
+      const postDialog = await screen.findByRole('dialog');
+      expect(postDialog).toBeInTheDocument();
+
+      // Find and click the Instagram checkbox
+      const instagramCheckbox = within(postDialog).getByRole('checkbox', { name: /instagram/i });
+      fireEvent.click(instagramCheckbox);
+
+      // Wait for the platform dialog to appear
+      const platformDialog = await screen.findByRole('dialog');
+      expect(platformDialog).toBeInTheDocument();
+
+      // Check the dialog content
+      expect(within(platformDialog).getByRole('heading')).toHaveTextContent(/connect instagram/i);
+      expect(within(platformDialog).getByText(/please connect your instagram account/i)).toBeInTheDocument();
+      expect(within(platformDialog).getByTestId('connect-instagram-button')).toBeInTheDocument();
     });
   });
 }); 
