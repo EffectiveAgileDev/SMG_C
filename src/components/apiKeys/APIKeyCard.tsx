@@ -7,11 +7,15 @@ import type { APIKeyDisplayProps } from './types';
 export function APIKeyCard({ apiKey, onRotate, onDeactivate }: APIKeyDisplayProps) {
   const [isRotating, setIsRotating] = useState(false);
   const [isDeactivating, setIsDeactivating] = useState(false);
+  const [rotateError, setRotateError] = useState<string | null>(null);
 
   const handleRotate = async () => {
     try {
       setIsRotating(true);
+      setRotateError(null);
       await onRotate(apiKey.id);
+    } catch (error) {
+      setRotateError("Could not rotate key");
     } finally {
       setIsRotating(false);
     }
@@ -55,6 +59,12 @@ export function APIKeyCard({ apiKey, onRotate, onDeactivate }: APIKeyDisplayProp
           <p>Last used: {format(new Date(apiKey.lastUsed), 'PPp')}</p>
         )}
       </div>
+
+      {rotateError && (
+        <div className="text-sm text-red-500">
+          {rotateError}
+        </div>
+      )}
 
       <div className="flex justify-end space-x-2">
         {apiKey.isActive && (

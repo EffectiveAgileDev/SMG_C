@@ -318,5 +318,3 @@ export class APIKeyService implements APIKeyServiceInterface {
     };
   }
 }
-
-export const apiKeyService = new APIKeyService();

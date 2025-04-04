@@ -107,22 +107,31 @@ describe('APIKeyCard', () => {
   });
 
   it('handles errors gracefully', async () => {
-    const onRotateError = vi.fn(() => Promise.reject(new Error('Rotation failed')));
-    
+    // Create a mock function that rejects with an error
+    const onRotateError = vi.fn().mockRejectedValue(new Error('Rotation failed'));
+
     render(
       <APIKeyCard
-        apiKey={mockApiKey}
+        apiKey={{
+          id: '123',
+          platformType: 'twitter',
+          keyName: 'Test Key',
+          encryptedKey: 'encrypted-key',
+          isActive: true,
+          createdAt: '2023-01-01T00:00:00Z'
+        }}
+        onDeactivate={() => Promise.resolve()}
         onRotate={onRotateError}
-        onDeactivate={onDeactivate}
       />
     );
 
-    const rotateButton = screen.getByText('Rotate Key');
+    // Find and click the rotate button
+    const rotateButton = screen.getByRole('button', { name: /rotate key/i });
     fireEvent.click(rotateButton);
 
+    // Wait for the error message to appear
     await waitFor(() => {
-      expect(rotateButton).toBeEnabled();
-      expect(screen.getByText('Rotate Key')).toBeInTheDocument();
+      expect(screen.getByText('Could not rotate key')).toBeInTheDocument();
     });
   });
 }); 
