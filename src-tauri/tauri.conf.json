@@ -3,5 +3,153 @@
   "productName": "Social Media Generator - Claude",
   "version": "0.1.0",
   "identifier": "com.smg_c.app",
-  "description": "Social Media Generator using Claude PRD - A cross-platform desktop application for generating and managing social media content"
+  "description": "Social Media Generator using Claude PRD - A cross-platform desktop application for generating and managing social media content",
+  "publisher": "Effective Agile Development LLC",
+  "copyright": "© 2024 Effective Agile Development. All rights reserved.",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "devUrl": "http://localhost:1420",
+    "beforeBuildCommand": "npm run build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "Social Media Generator",
+        "width": 1200,
+        "height": 800,
+        "minWidth": 800,
+        "minHeight": 600,
+        "center": true,
+        "resizable": true,
+        "fullscreen": false,
+        "decorations": true
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": [
+      "msi",
+      "nsis"
+    ],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "windows": {
+      "certificateThumbprint": null,
+      "digestAlgorithm": "sha256",
+      "timestampUrl": "",
+      "wix": {
+        "language": ["en-US"],
+        "template": null,
+        "fragmentPaths": [],
+        "componentRefs": [],
+        "license": null,
+        "bannerPath": null,
+        "dialogImagePath": null,
+        "enableElevatedUpdateTask": false,
+        "installModes": ["currentUser", "perMachine"],
+        "shortcutPromptFolder": true
+      },
+      "nsis": {
+        "template": null,
+        "templatePath": null,
+        "license": null,
+        "headerImage": null,
+        "sidebarImage": null,
+        "installerIcon": "icons/icon.ico",
+        "installMode": "currentUser",
+        "displayLanguageSelector": false,
+        "languages": ["English"],
+        "shortcutName": "SMG-C",
+        "shortcutStartMenuDir": "Effective Agile Development",
+        "displayRunAfterFinish": true
+      }
+    }
+  },
+  "plugins": {
+    "shell": {
+      "open": true
+    },
+    "updater": {
+      "active": false,
+      "dialog": true,
+      "endpoints": [],
+      "pubkey": ""
+    }
+  },
+  "allowlist": {
+    "all": false,
+    "fs": {
+      "all": false,
+      "readFile": true,
+      "writeFile": true,
+      "readDir": true,
+      "createDir": true,
+      "exists": true,
+      "scope": [
+        "$APPDATA/**",
+        "$DESKTOP/**",
+        "$DOCUMENT/**",
+        "$DOWNLOAD/**",
+        "$HOME/**",
+        "$PICTURE/**",
+        "$TEMP/**"
+      ]
+    },
+    "dialog": {
+      "all": false,
+      "open": true,
+      "save": true,
+      "message": true,
+      "confirm": true
+    },
+    "shell": {
+      "all": false,
+      "open": true
+    },
+    "http": {
+      "all": true,
+      "request": true
+    },
+    "clipboard": {
+      "all": true,
+      "writeText": true,
+      "readText": true
+    },
+    "notification": {
+      "all": true
+    },
+    "window": {
+      "all": false,
+      "close": true,
+      "hide": true,
+      "show": true,
+      "maximize": true,
+      "minimize": true,
+      "unmaximize": true,
+      "unminimize": true,
+      "startDragging": true,
+      "setSize": true
+    },
+    "os": {
+      "all": true
+    },
+    "path": {
+      "all": true
+    },
+    "process": {
+      "all": false,
+      "exit": true,
+      "relaunch": true
+    }
+  }
 } 
