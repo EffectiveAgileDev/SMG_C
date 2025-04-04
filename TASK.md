@@ -148,12 +148,12 @@ Set up Supabase integration for social media content storage and management
       - [x] Selection handling
       - [x] Delete confirmation
       - [x] Comprehensive test coverage
-    - [ ] Image gallery component
-      - [ ] Grid layout
-      - [ ] Sorting options
-      - [ ] Filtering capabilities
-      - [ ] Batch selection
-      - [ ] Batch delete
+    - [x] Image gallery component
+      - [x] Grid layout
+      - [x] Sorting options
+      - [x] Filtering capabilities
+      - [x] Batch selection
+      - [x] Batch delete
   - [x] Platform Configurations table
     - [x] Basic structure with platform settings
     - [x] JSON configuration storage
