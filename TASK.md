@@ -176,10 +176,33 @@ Set up Supabase integration for social media content storage and management
 
 ### Development Practices
 - [x] Implement Test-Driven Development (TDD)
+  - [x] Write failing test first
+  - [x] Implement minimum code to pass
+  - [x] Refactor while keeping tests green
+  - [x] Run ALL tests after ANY feature change
+    - Changes in one area can affect other areas
+    - Full test suite acts as regression detection
+    - No feature is complete until all tests pass
 - [x] Set up continuous integration
 - [x] Document code and architecture
 - [ ] Set up error monitoring
 - [ ] Add performance monitoring
+
+### Development Environment Performance
+- [x] Automation vs. Resource Trade-offs
+  - [x] Enable MCP and continuous testing features
+  - [x] Monitor system resource impact
+  - [x] Document performance optimization strategies
+  - [x] Balance automation benefits vs resource usage
+    - Faster development cycles
+    - Immediate feedback
+    - Earlier issue detection
+    - Consistent quality checks
+- [x] Environment-Specific Settings
+  - [x] Configure workspace-specific automation
+  - [x] Set up selective file watching
+  - [x] Implement task queuing for heavy operations
+  - [x] Document recommended settings per environment
 
 ### Deliverables
 - [x] Supabase client configuration

@@ -15,6 +15,7 @@ interface CalendarProps {
     scheduled_for: string;
     platforms: string[];
   }>;
+  initialDate?: Date;
 }
 
 interface NewPost {
@@ -23,9 +24,9 @@ interface NewPost {
   scheduled_for: string;
 }
 
-export default function Calendar({ initialPosts = [] }: CalendarProps) {
+export default function Calendar({ initialPosts = [], initialDate = new Date(2024, 3, 1) }: CalendarProps) {
   const [view, setView] = useState<'month' | 'week'>('month');
-  const [selectedDate, setSelectedDate] = useState(new Date(2024, 3, 1)); // April 2024 (months are 0-based)
+  const [selectedDate, setSelectedDate] = useState(initialDate);
   const [showDialog, setShowDialog] = useState(false);
   const [showConnectionDialog, setShowConnectionDialog] = useState(false);
   const [platformToConnect, setPlatformToConnect] = useState<string | null>(null);
@@ -67,15 +68,20 @@ export default function Calendar({ initialPosts = [] }: CalendarProps) {
     if (!isPlatformConnected(platform)) {
       setPlatformToConnect(platform);
       setShowConnectionDialog(true);
+      setShowDialog(false);
       return;
     }
 
-    setNewPost(prev => ({
-      ...prev,
-      platforms: prev.platforms.includes(platform)
+    setNewPost(prev => {
+      const updatedPlatforms = prev.platforms.includes(platform)
         ? prev.platforms.filter(p => p !== platform)
-        : [...prev.platforms, platform]
-    }));
+        : [...prev.platforms, platform];
+      
+      return {
+        ...prev,
+        platforms: updatedPlatforms
+      };
+    });
   };
 
   const handleConnectPlatform = () => {
@@ -91,7 +97,19 @@ export default function Calendar({ initialPosts = [] }: CalendarProps) {
   const handleDrop = (date: Date, hour: number) => {
     if (draggedPostId === null) return;
 
-    const newScheduledFor = format(date, `yyyy-MM-dd'T'${hour.toString().padStart(2, '0')}:00:00`);
+    // Create a UTC date for the new scheduled time
+    const newScheduledFor = new Date(
+      Date.UTC(
+        date.getFullYear(),
+        date.getMonth(),
+        date.getDate(),
+        hour,
+        0,
+        0,
+        0
+      )
+    ).toISOString();
+
     setPosts(prevPosts =>
       prevPosts.map(post =>
         post.id === draggedPostId
@@ -103,8 +121,31 @@ export default function Calendar({ initialPosts = [] }: CalendarProps) {
   };
 
   const getPostsForSlot = (date: Date, hour: number) => {
-    const slotTime = format(date, `yyyy-MM-dd'T'${hour.toString().padStart(2, '0')}:00:00`);
-    return posts.filter(post => post.scheduled_for === slotTime);
+    // Create a slot time string in ISO format
+    const slotTime = new Date(
+      Date.UTC(
+        date.getFullYear(),
+        date.getMonth(),
+        date.getDate(),
+        hour,
+        0,
+        0,
+        0
+      )
+    ).toISOString();
+
+    return posts.filter(post => {
+      // Get the post time in ISO format
+      const postTime = new Date(post.scheduled_for).toISOString();
+
+      console.log('Comparing slots:', {
+        slotTime,
+        postTime,
+        match: slotTime === postTime
+      });
+
+      return slotTime === postTime;
+    });
   };
 
   const renderDays = () => {

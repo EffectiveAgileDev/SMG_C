@@ -40,7 +40,15 @@ export default function PostDialog({ onClose, onSave, initialPost, onPlatformTog
                   <input
                     type="checkbox"
                     checked={post.platforms.includes(platform)}
-                    onChange={() => onPlatformToggle(platform)}
+                    onChange={() => {
+                      onPlatformToggle(platform);
+                      setPost(prev => ({
+                        ...prev,
+                        platforms: prev.platforms.includes(platform)
+                          ? prev.platforms.filter(p => p !== platform)
+                          : [...prev.platforms, platform]
+                      }));
+                    }}
                     disabled={!connected}
                     className="mr-2"
                     aria-label={platform.toLowerCase()}

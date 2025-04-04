@@ -10,7 +10,7 @@ export default function PlatformDialog({ platform, onClose, onConnect }: Platfor
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center" role="dialog">
       <div className="bg-white p-4 rounded-lg shadow-lg w-96">
-        <h3 className="text-lg font-semibold mb-4">Connect {platform}</h3>
+        <h3 className="text-lg font-semibold mb-4" role="heading" aria-level={1}>Connect {platform}</h3>
         <p className="mb-4">Please connect your {platform} account to continue.</p>
         <div className="flex justify-end space-x-2">
           <button
