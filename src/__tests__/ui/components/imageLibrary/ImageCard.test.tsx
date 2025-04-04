@@ -173,7 +173,34 @@ describe('UI Components', () => {
       });
 
       describe('Loading States', () => {
-        // Tests will be added here after delete handling is working
+        it('should show loading state in delete button when deleting', () => {
+          render(
+            <ImageCard
+              image={mockImage}
+              selected={false}
+              onSelect={() => {}}
+              onDelete={() => {}}
+              isDeleting={true}
+            />
+          );
+
+          expect(screen.getByRole('button', { name: /deleting/i })).toBeInTheDocument();
+        });
+
+        it('should disable delete button when in loading state', () => {
+          render(
+            <ImageCard
+              image={mockImage}
+              selected={false}
+              onSelect={() => {}}
+              onDelete={() => {}}
+              isDeleting={true}
+            />
+          );
+
+          const deleteButton = screen.getByRole('button', { name: /deleting/i });
+          expect(deleteButton).toBeDisabled();
+        });
       });
     });
   });

@@ -24,7 +24,9 @@ interface ImageCardProps {
 
 export function ImageCard({ image, selected, onSelect, onDelete, isDeleting = false }: ImageCardProps) {
   const handleSelect = () => {
-    onSelect(image.id);
+    if (!selected) {
+      onSelect(image.id);
+    }
   };
 
   return (
@@ -45,7 +47,7 @@ export function ImageCard({ image, selected, onSelect, onDelete, isDeleting = fa
       </Button>
       <Dialog>
         <DialogTrigger asChild>
-          <Button variant="destructive" data-variant="destructive">
+          <Button variant="destructive" data-variant="destructive" disabled={isDeleting}>
             {isDeleting ? 'Deleting...' : 'Delete'}
           </Button>
         </DialogTrigger>
