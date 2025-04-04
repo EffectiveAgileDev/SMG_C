@@ -3,7 +3,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import React from 'react';
 import { ImageGallery } from '../../../../components/imageLibrary/ImageGallery';
-import type { StoredImage } from '../../../../lib/types/image';
+import type { StoredImage } from '../../../../lib/types/imageLibrary';
 
 describe('UI Components', () => {
   describe('ImageLibrary', () => {
@@ -13,25 +13,25 @@ describe('UI Components', () => {
         {
           id: '1',
           name: 'test-image-1.jpg',
-          url: 'https://example.com/test1.jpg',
+          path: '/images/test1.jpg',
           size: 1024,
-          type: 'image/jpeg',
+          format: 'image/jpeg',
           width: 800,
           height: 600,
           created_at: '2024-04-01T10:00:00Z',
-          updated_at: '2024-04-01T10:00:00Z',
+          updated_at: '2024-04-01T10:00:00Z'
         },
         {
           id: '2',
           name: 'test-image-2.png',
-          url: 'https://example.com/test2.png',
+          path: '/images/test2.png',
           size: 2048,
-          type: 'image/png',
+          format: 'image/png',
           width: 1024,
           height: 768,
           created_at: '2024-04-02T10:00:00Z',
-          updated_at: '2024-04-02T10:00:00Z',
-        },
+          updated_at: '2024-04-02T10:00:00Z'
+        }
       ];
 
       describe('Basic Rendering', () => {

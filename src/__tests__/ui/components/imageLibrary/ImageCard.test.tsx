@@ -3,7 +3,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import React from 'react';
 import { ImageCard } from '../../../../components/imageLibrary/ImageCard';
-import type { StoredImage } from '../../../../lib/types/image';
+import type { StoredImage } from '../../../../lib/types/imageLibrary';
 
 describe('UI Components', () => {
   describe('ImageLibrary', () => {
@@ -12,13 +12,13 @@ describe('UI Components', () => {
       const mockImage: StoredImage = {
         id: '1',
         name: 'test-image.jpg',
-        url: 'https://example.com/test.jpg',
+        path: '/images/test-image.jpg',
         size: 1024,
-        type: 'image/jpeg',
+        format: 'image/jpeg',
         width: 800,
         height: 600,
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       };
 
       describe('Basic Rendering', () => {

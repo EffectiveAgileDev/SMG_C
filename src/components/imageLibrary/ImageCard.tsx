@@ -1,18 +1,10 @@
 'use client';
 
 import React from 'react';
-import type { StoredImage } from '../../lib/types/image';
+import type { StoredImage, ImageCardProps } from '../../lib/types/imageLibrary';
 import { formatFileSize } from '../../lib/utils';
 import { Button } from '../ui/button';
 import { ConfirmationDialog } from '../ui/ConfirmationDialog';
-
-interface ImageCardProps {
-  image: StoredImage;
-  selected: boolean;
-  onSelect: (id: string) => void;
-  onDelete: (id: string) => void;
-  isDeleting?: boolean;
-}
 
 export function ImageCard({ image, selected, onSelect, onDelete, isDeleting = false }: ImageCardProps) {
   const handleSelect = () => {

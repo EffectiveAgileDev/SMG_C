@@ -1,17 +1,10 @@
 import React, { useState, useMemo } from 'react';
-import type { StoredImage } from '../../lib/types/image';
+import type { StoredImage, ImageGalleryProps, SortOption } from '../../lib/types/imageLibrary';
 import { ImageCard } from './ImageCard';
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { ConfirmationDialog } from '../ui/ConfirmationDialog';
-
-type SortOption = 'name_asc' | 'name_desc' | 'date_asc' | 'date_desc';
-
-interface ImageGalleryProps {
-  images: StoredImage[];
-  onDeleteImages: (imageIds: string[]) => Promise<void> | void;
-}
 
 export const ImageGallery: React.FC<ImageGalleryProps> = ({ images, onDeleteImages }) => {
   const [filterText, setFilterText] = useState('');
