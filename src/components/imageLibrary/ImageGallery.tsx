@@ -4,7 +4,7 @@ import { ImageCard } from './ImageCard';
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
+import { ConfirmationDialog } from '../ui/ConfirmationDialog';
 
 type SortOption = 'name_asc' | 'name_desc' | 'date_asc' | 'date_desc';
 
@@ -96,32 +96,19 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({ images, onDeleteImag
           </SelectContent>
         </Select>
         {selectedImages.size > 0 && (
-          <Dialog>
-            <DialogTrigger asChild>
+          <ConfirmationDialog
+            title="Delete Selected Images"
+            description={`Are you sure you want to delete ${selectedImages.size} selected images? This action cannot be undone.`}
+            onConfirm={handleBatchDelete}
+            isLoading={isDeleting}
+            trigger={
               <Button variant="destructive">Delete Selected</Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Delete Selected Images</DialogTitle>
-                <DialogDescription>
-                  Are you sure you want to delete {selectedImages.size} selected images? This action cannot be undone.
-                </DialogDescription>
-              </DialogHeader>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => {}}>Cancel</Button>
-                <Button 
-                  variant="destructive" 
-                  onClick={handleBatchDelete} 
-                  disabled={isDeleting}
-                >
-                  {isDeleting ? 'Deleting...' : 'Delete'}
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+            }
+          />
         )}
       </div>
-      <div 
+      
+      <div
         className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
         data-testid="image-gallery-grid"
       >

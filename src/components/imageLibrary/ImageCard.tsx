@@ -4,15 +4,7 @@ import React from 'react';
 import type { StoredImage } from '../../lib/types/image';
 import { formatFileSize } from '../../lib/utils';
 import { Button } from '../ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "../ui/dialog";
+import { ConfirmationDialog } from '../ui/ConfirmationDialog';
 
 interface ImageCardProps {
   image: StoredImage;
@@ -45,31 +37,17 @@ export function ImageCard({ image, selected, onSelect, onDelete, isDeleting = fa
       >
         {selected ? 'Selected' : 'Select Image'}
       </Button>
-      <Dialog>
-        <DialogTrigger asChild>
+      <ConfirmationDialog
+        title="Delete Image"
+        description="Are you sure you want to delete this image? This action cannot be undone."
+        onConfirm={() => onDelete(image.id)}
+        isLoading={isDeleting}
+        trigger={
           <Button variant="destructive" data-variant="destructive" disabled={isDeleting}>
             {isDeleting ? 'Deleting...' : 'Delete'}
           </Button>
-        </DialogTrigger>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Delete Image</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to delete this image? This action cannot be undone.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline">Cancel</Button>
-            <Button 
-              variant="destructive"
-              onClick={() => onDelete(image.id)}
-              disabled={isDeleting}
-            >
-              {isDeleting ? 'Deleting...' : 'Delete'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        }
+      />
     </div>
   );
 } 
