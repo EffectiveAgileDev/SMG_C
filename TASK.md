@@ -138,6 +138,22 @@ Set up Supabase integration for social media content storage and management
       - [x] Support aspect ratio maintenance
       - [x] Add comprehensive test coverage
       - [x] Document testing patterns in TESTING-P.md
+    - [x] Image upload component
+      - [x] Drag and drop support
+      - [x] File type validation
+      - [x] Size limits
+      - [x] Upload progress
+    - [x] Image card component
+      - [x] Basic image information display
+      - [x] Selection handling
+      - [x] Delete confirmation
+      - [x] Comprehensive test coverage
+    - [ ] Image gallery component
+      - [ ] Grid layout
+      - [ ] Sorting options
+      - [ ] Filtering capabilities
+      - [ ] Batch selection
+      - [ ] Batch delete
   - [x] Platform Configurations table
     - [x] Basic structure with platform settings
     - [x] JSON configuration storage

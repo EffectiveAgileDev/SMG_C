@@ -26,13 +26,14 @@ export interface ImageImportResult {
   } | null;
 }
 
-export interface StoredImage extends ImageMetadata {
+export interface StoredImage {
   id: string;
-  user_id: string;
-  storage_path: string;
+  name: string;
   url: string;
-  content_type: string;
-  file_name: string;
+  size: number;
+  type: string;
+  width: number;
+  height: number;
   created_at: string;
   updated_at: string;
 }
