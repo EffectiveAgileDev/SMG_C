@@ -10,6 +10,22 @@
     Date: April 12, 2024
 #>
 
+# Parameters
+param(
+    [Parameter()]
+    [switch]$SkipTests = $false,
+    
+    [Parameter()]
+    [switch]$SkipClean = $false,
+    
+    [Parameter()]
+    [switch]$SignBuild = $false,
+    
+    [Parameter()]
+    [ValidateSet("release", "debug")]
+    [string]$BuildMode = "release"
+)
+
 #Requires -Version 5.1
 
 # Start transcript logging
@@ -19,14 +35,6 @@ if (-not (Test-Path -Path $LogsDir)) {
     New-Item -Path $LogsDir -ItemType Directory -Force | Out-Null
 }
 Start-Transcript -Path $TranscriptPath -Append
-
-# Parameters
-param(
-    [switch]$SkipTests,
-    [switch]$SkipClean,
-    [switch]$SignBuild,
-    [string]$BuildMode = "release"
-)
 
 # Configuration
 $AppName = "PromptlySocial"
@@ -38,6 +46,15 @@ $StartTime = Get-Date
 $ProjectRoot = Resolve-Path (Join-Path -Path $PSScriptRoot -ChildPath "..")
 $DistPath = Join-Path -Path $ProjectRoot -ChildPath "dist"
 $BuildScriptPath = Join-Path -Path $ProjectRoot -ChildPath "src\__tests__\installation\build-windows-installer.ps1"
+
+# Get version from package.json
+$PackageJsonPath = Join-Path -Path $ProjectRoot -ChildPath "package.json"
+if (-not (Test-Path -Path $PackageJsonPath)) {
+    Write-Host "❌ ERROR: package.json not found at $PackageJsonPath" -ForegroundColor Red
+    exit 1
+}
+$PackageJson = Get-Content -Path $PackageJsonPath -Raw | ConvertFrom-Json
+$Version = $PackageJson.version
 
 # Display header
 Write-Host "==============================================" -ForegroundColor Cyan
@@ -207,7 +224,11 @@ Invoke-BuildStep -Name "Building Tauri application" -Command {
     
     # Build Tauri for release
     Write-Host "Building Tauri application for $BuildMode..." -ForegroundColor Yellow
-    cargo tauri build --target x86_64-pc-windows-msvc --$BuildMode
+    if ($BuildMode -eq "release") {
+        cargo tauri build --target x86_64-pc-windows-msvc
+    } else {
+        cargo tauri build --target x86_64-pc-windows-msvc --debug
+    }
     if ($LASTEXITCODE -ne 0) {
         throw "Failed to build Tauri application"
     }

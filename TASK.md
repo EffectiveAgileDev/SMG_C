@@ -490,3 +490,28 @@ Build, package, and test the application installer for Windows 10/11 platforms t
 - [ ] Consider code signing requirements and EV certificate options
 - [ ] Plan for enterprise deployment scenarios with Group Policy options
 - [ ] Investigate Windows Defender SmartScreen impact on installation 
+
+### Windows Production Build
+**Status: IN PROGRESS - April 4, 2024**
+
+- [x] Create production environment configuration
+  - [x] Set up .env.production
+  - [x] Configure build optimizations
+  - [x] Set up proper environment variables
+- [x] Create verification scripts
+  - [x] verify-windows-installation.ps1
+  - [x] verify-uninstall.ps1
+  - [x] smoke-test.ps1
+- [ ] Production Build Script (In Progress)
+  - [x] Create build-production.ps1 structure
+  - [x] Implement clean build process
+  - [x] Add dependency checks
+  - [x] Configure version management
+  - [ ] Fix parameter handling issues
+  - [ ] Complete build process testing
+  - [ ] Verify installer generation
+- [ ] Windows Installer Configuration
+  - [ ] Configure MSI properties
+  - [ ] Set up registry entries
+  - [ ] Configure start menu shortcuts
+  - [ ] Set up uninstall process 
