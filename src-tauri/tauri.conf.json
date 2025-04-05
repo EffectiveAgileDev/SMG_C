@@ -5,7 +5,7 @@
   "identifier": "com.promptlysocial.app",
   "description": "Promptly Social - A cross-platform desktop application for generating and managing social media content",
   "publisher": "Effective Agile Development LLC",
-  "copyright": "© 2024 Effective Agile Development. All rights reserved.",
+  "copyright": "© 2025Effective Agile Development. All rights reserved.",
   "build": {
     "beforeDevCommand": "npm run dev",
     "devUrl": "http://localhost:1420",
